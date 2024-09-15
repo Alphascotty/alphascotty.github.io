@@ -1,25 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<style>
-canvas {
-    border:1px solid #d3d3d3;
-    background-color: #00f1f1;
-}
-</style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+        canvas {
+            border: 2px solid #d3d3d3;
+            background-color: #00f1f1;
+        }
+    </style>
 </head>
 <body onload="startGame()">
-  
-<script src="game2.js">
 
+    <!-- Audio Elements -->
+    <audio id="jumpSound" src="jump.mp3"></audio>
+    <audio id="crashSound" src="crash.mp3"></audio>
 
-</script>
-    
-<br>
-<button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">ACCELERATE</button>
-<p>Use the ACCELERATE button to stay in the air</p>
-  <button onClick="startGame()"> Start the Game </button>
-<p>How long can you stay alive?</p>
+    <!-- Buttons -->
+    <button id="startButton">Start Game</button>
+    <button id="pauseButton">Pause Game</button>
+    <button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">ACCELERATE</button>
+    <p>Use the ACCELERATE button to stay in the air</p>
+    <p>How long can you stay alive?</p>
+
+    <!-- Canvas -->
+    <script src="game.js"></script>
 </body>
 </html>
