@@ -6,6 +6,10 @@ var frames = ["frame1.png", "frame2.png", "frame3.png"];
 var currentFrame = 0;
 var frameCount = 0;
 
+// Background image
+var backgroundImage = new Image();
+backgroundImage.src = "background.jpg"; // Set the path to your background image
+
 function startGame() {
     myGamePiece = new gameObject(30, 30, "character.png", 10, 120);
     character2 = new gameObject(20, 20, "character.png", 20, 150);
