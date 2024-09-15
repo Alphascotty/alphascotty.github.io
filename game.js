@@ -2,13 +2,20 @@ var myGamePiece;
 var myObstacles = [];
 var myScore;
 var keys = {};
+var gamePaused = false;
+var backgroundMusic = document.getElementById("backgroundMusic");
+
+document.getElementById("startButton").addEventListener("click", startGame);
+document.getElementById("pauseButton").addEventListener("click", togglePause);
 
 function startGame() {
-    myGamePiece = new gameObject(30, 30, "red", 10, 120);
-    
+    // Replace with a character image
+    myGamePiece = new gameObject(30, 30, "character.png", 10, 120, "image");
+
     myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
 
     myGameArea.start();
+    backgroundMusic.play(); // Start background music
 
     // Add event listeners for keydown and keyup
     window.addEventListener('keydown', function(e) {
@@ -28,14 +35,14 @@ var myGameArea = {
         this.context = this.canvas.getContext("2d");
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         this.frameNo = 0;
-        this.interval = setInterval(updateGameArea, 20);
+        this.interval = setInterval(updateGameArea, 20); // Game loop
     },
     clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 }
 
-function gameObject(width, height, color, x, y, type) {
+function gameObject(width, height, colorOrImage, x, y, type) {
     this.type = type;
     this.width = width;
     this.height = height;
@@ -43,22 +50,32 @@ function gameObject(width, height, color, x, y, type) {
     this.speedY = 0;
     this.x = x;
     this.y = y;
+
+    if (type === "image") {
+        this.image = new Image();
+        this.image.src = colorOrImage; // Load the image file
+    }
+
     this.update = function() {
         var ctx = myGameArea.context;
         if (this.type == "text") {
             ctx.font = this.width + " " + this.height;
-            ctx.fillStyle = color;
+            ctx.fillStyle = colorOrImage;
             ctx.fillText(this.text, this.x, this.y);
+        } else if (this.type == "image") {
+            ctx.drawImage(this.image, this.x, this.y, this.width, this.height); // Draw the image
         } else {
-            ctx.fillStyle = color;
+            ctx.fillStyle = colorOrImage;
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     }
+
     this.newPos = function() {
         this.x += this.speedX;
         this.y += this.speedY;
         this.hitEdges(); // Prevent the object from moving out of the canvas
     }
+
     this.hitEdges = function() {
         // Restrict the object from moving out of the canvas
         if (this.x < 0) {
@@ -74,6 +91,7 @@ function gameObject(width, height, color, x, y, type) {
             this.y = myGameArea.canvas.height - this.height;
         }
     }
+
     this.crashWith = function(otherobj) {
         var myleft = this.x;
         var myright = this.x + this.width;
@@ -92,66 +110,81 @@ function gameObject(width, height, color, x, y, type) {
 }
 
 function updateGameArea() {
-    var x, height, gap, minHeight, maxHeight, minGap, maxGap;
+    if (!gamePaused) {  // Only update if the game is not paused
+        var x, height, gap, minHeight, maxHeight, minGap, maxGap;
 
-    // Check for collisions
-    for (var i = 0; i < myObstacles.length; i++) {
-        if (myGamePiece.crashWith(myObstacles[i])) {
-            return;
+        // Check for collisions
+        for (var i = 0; i < myObstacles.length; i++) {
+            if (myGamePiece.crashWith(myObstacles[i])) {
+                return;
+            }
         }
-    }
 
-    // Clear the canvas
-    myGameArea.clear();
-    myGameArea.frameNo += 1;
+        // Clear the canvas
+        myGameArea.clear();
+        myGameArea.frameNo += 1;
 
-    // Create new obstacles
-    if (myGameArea.frameNo == 1 || everyinterval(150)) {
-        x = myGameArea.canvas.width;
-        minHeight = 20;
-        maxHeight = 200;
-        height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
-        minGap = 50;
-        maxGap = 200;
-        gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
-        myObstacles.push(new gameObject(10, height, "green", x, 0));
-        myObstacles.push(new gameObject(10, x - height - gap, "green", x, height + gap));
-    }
+        // Create new obstacles (poles with images)
+        if (myGameArea.frameNo == 1 || everyinterval(150)) {
+            x = myGameArea.canvas.width;
+            minHeight = 20;
+            maxHeight = 200;
+            height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
+            minGap = 50;
+            maxGap = 200;
+            gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
 
-    // Move and update obstacles
-    for (var i = 0; i < myObstacles.length; i++) {
-        myObstacles[i].x -= 1;
-        myObstacles[i].update();
-    }
+            // Add top and bottom pole images
+            myObstacles.push(new gameObject(10, height, "pole.png", x, 0, "image")); // Top pole
+            myObstacles.push(new gameObject(10, x - height - gap, "pole.png", x, height + gap, "image")); // Bottom pole
+        }
 
-    // Update score
-    myScore.text = "SCORE: " + myGameArea.frameNo;
-    myScore.update();
+        // Move and update obstacles
+        for (var i = 0; i < myObstacles.length; i++) {
+            myObstacles[i].x -= 1;
+            myObstacles[i].update();
+        }
 
-    // Update game piece
-    myGamePiece.newPos();
-    myGamePiece.update();
-    character2.update();
+        // Update score
+        myScore.text = "SCORE: " + myGameArea.frameNo;
+        myScore.update();
 
-    // Arrow key controls
-    if (keys['ArrowUp']) {
-        myGamePiece.speedY = -2; // Move up
-    } else if (keys['ArrowDown']) {
-        myGamePiece.speedY = 2;  // Move down
-    } else {
-        myGamePiece.speedY = 0;  // Stop moving vertically
-    }
+        // Update game piece
+        myGamePiece.newPos();
+        myGamePiece.update();
 
-    if (keys['ArrowLeft']) {
-        myGamePiece.speedX = -2; // Move left
-    } else if (keys['ArrowRight']) {
-        myGamePiece.speedX = 2;  // Move right
-    } else {
-        myGamePiece.speedX = 0;  // Stop moving horizontally
+        // Arrow key controls
+        if (keys['ArrowUp']) {
+            myGamePiece.speedY = -2; // Move up
+        } else if (keys['ArrowDown']) {
+            myGamePiece.speedY = 2;  // Move down
+        } else {
+            myGamePiece.speedY = 0;  // Stop moving vertically
+        }
+
+        if (keys['ArrowLeft']) {
+            myGamePiece.speedX = -2; // Move left
+        } else if (keys['ArrowRight']) {
+            myGamePiece.speedX = 2;  // Move right
+        } else {
+            myGamePiece.speedX = 0;  // Stop moving horizontally
+        }
     }
 }
 
 function everyinterval(n) {
     return (myGameArea.frameNo / n) % 1 === 0;
+}
+
+function togglePause() {
+    if (!gamePaused) {
+        gamePaused = true;
+        backgroundMusic.pause(); // Pause the background music
+        document.getElementById("pauseButton").textContent = "Resume Game"; // Update button text
+    } else {
+        gamePaused = false;
+        backgroundMusic.play(); // Resume the background music
+        document.getElementById("pauseButton").textContent = "Pause Game"; // Update button text
+    }
 }
 
