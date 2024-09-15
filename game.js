@@ -5,7 +5,6 @@ var keys = {};
 
 function startGame() {
     myGamePiece = new gameObject(30, 30, "red", 10, 120);
-    character2 = new gameObject(20, 20, "yellow", 20, 150);
     
     myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
 
