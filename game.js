@@ -7,7 +7,6 @@ function startGame() {
     myGamePiece = new gameObject(30, 30, "red", 10, 120);
     character2 = new gameObject(20, 20, "yellow", 20, 150);
     
-    myGamePiece.gravity = 0.05;
     myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
 
     myGameArea.start();
@@ -39,15 +38,12 @@ var myGameArea = {
 
 function gameObject(width, height, color, x, y, type) {
     this.type = type;
-    this.score = 0;
     this.width = width;
     this.height = height;
     this.speedX = 0;
     this.speedY = 0;
     this.x = x;
     this.y = y;
-    this.gravity = 0;
-    this.gravitySpeed = 0;
     this.update = function() {
         var ctx = myGameArea.context;
         if (this.type == "text") {
@@ -60,16 +56,23 @@ function gameObject(width, height, color, x, y, type) {
         }
     }
     this.newPos = function() {
-        this.gravitySpeed += this.gravity;
         this.x += this.speedX;
-        this.y += this.speedY + this.gravitySpeed;
-        this.hitBottom();
+        this.y += this.speedY;
+        this.hitEdges(); // Prevent the object from moving out of the canvas
     }
-    this.hitBottom = function() {
-        var rockbottom = myGameArea.canvas.height - this.height;
-        if (this.y > rockbottom) {
-            this.y = rockbottom;
-            this.gravitySpeed = 0;
+    this.hitEdges = function() {
+        // Restrict the object from moving out of the canvas
+        if (this.x < 0) {
+            this.x = 0;
+        }
+        if (this.x > myGameArea.canvas.width - this.width) {
+            this.x = myGameArea.canvas.width - this.width;
+        }
+        if (this.y < 0) {
+            this.y = 0;
+        }
+        if (this.y > myGameArea.canvas.height - this.height) {
+            this.y = myGameArea.canvas.height - this.height;
         }
     }
     this.crashWith = function(otherobj) {
@@ -153,10 +156,3 @@ function everyinterval(n) {
     return (myGameArea.frameNo / n) % 1 === 0;
 }
 
-function accelerate(n) {
-    myGamePiece.gravity = n;
-}
-
-function accelerate(n) {
-    myGamePiece.gravity = n;
-}
