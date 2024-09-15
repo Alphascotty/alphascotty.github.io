@@ -10,6 +10,7 @@ document.getElementById("pauseButton").addEventListener("click", togglePause);
 
 function startGame() {
     // Replace with a character image
+    this.image.src = "images/character.png"; // Replace with the correct image path
     myGamePiece = new gameObject(30, 30, "character.png", 10, 120, "image");
 
     myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
