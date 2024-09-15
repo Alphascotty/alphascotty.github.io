@@ -1,29 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <style>
-        canvas {
-            border: 2px solid #d3d3d3;
-            background-color: #00f1f1;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game with Graphics</title>
 </head>
-<body onload="startGame()">
+<body>
 
-    <!-- Audio Elements -->
-    <audio id="jumpSound" src="jump.mp3"></audio>
-    <audio id="crashSound" src="crash.mp3"></audio>
-    <audio id="shootsound" src="gunshot.mp3"></audio>
+<button id="startButton">Start Game</button>
+<button id="pauseButton">Pause Game</button>
 
-    <!-- Buttons -->
-    <button id="startButton">Start Game</button>
-    <button id="pauseButton">Pause Game</button>
-    <button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">ACCELERATE</button>
-    <p>Use the ACCELERATE button to stay in the air</p>
-    <p>How long can you stay alive?</p>
+<audio id="backgroundMusic" src="your-music-file.mp3" loop></audio> <!-- Add your own music file -->
 
-    <!-- Canvas -->
-    <script src="game.js"></script>
+<!-- Link to external JavaScript file -->
+<script src="game.js"></script>
 </body>
 </html>
