@@ -3,9 +3,9 @@ var myObstacles = [];
 var myScore;
 var keys = {};
 var gamePaused = false;
-var backgroundMusic = new Audio("/media/backgroundMusic.mp3"); // Correctly linking background music
-var gunshotSound = new Audio("/media/gunshot.mp3"); // Correctly linking gunshot sound
-var jumpSound = new Audio("/media/jump.mp3"); // Correctly linking jump sound
+var backgroundMusic = new Audio("/Media/backgroundMusic.mp3"); // Correctly linking background music
+var gunshotSound = new Audio("/Media/gunshot.mp3"); // Correctly linking gunshot sound
+var jumpSound = new Audio("/Media/jump.mp3"); // Correctly linking jump sound
 
 document.getElementById("startButton").addEventListener("click", startGame);
 document.getElementById("pauseButton").addEventListener("click", togglePause);
