@@ -1,12 +1,12 @@
 var myGamePiece;
 var myObstacles = [];
+var myFlyingObstacles = [];
 var myBullets = [];
-var myFlyingObstacles = []; // New array for flying obstacles
 var myScore;
 var keys = {};
 var gamePaused = false;
+var gameSpeed = 1;
 var backgroundImage;
-var gameSpeed = 1; // Variable to control game speed
 
 // Add error handling to audio
 var backgroundMusic = new Audio();
@@ -41,13 +41,6 @@ function startGame() {
     // Initialize score display
     myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
 
-    // Load background image globally
-    backgroundImage = new Image();
-    backgroundImage.src = "./Media/background.jpg";
-    backgroundImage.onerror = function() {
-        console.error("Error loading background image.");
-    };
-
     // Start game area
     myGameArea.start();
 
@@ -55,14 +48,26 @@ function startGame() {
     window.addEventListener('keydown', function(e) {
         keys[e.key] = true;
 
-        // Shoot bullet when space bar is pressed
-        if (e.key === ' ') {
-            shootBullet();
+        // Fire bullet on spacebar press
+        if (e.key === " ") {
+            fireBullet();
         }
     });
 
     window.addEventListener('keyup', function(e) {
         keys[e.key] = false;
+    });
+}
+
+function fireBullet() {
+    // Fire a bullet from the game piece
+    var bullet = new gameObject(10, 10, "black", myGamePiece.x + myGamePiece.width, myGamePiece.y + myGamePiece.height / 2 - 5, "bullet");
+    bullet.speedX = 4 * gameSpeed; // Bullet speed scales with game speed
+    myBullets.push(bullet);
+
+    // Play gunshot sound
+    gunshotSound.play().catch(function(error) {
+        console.error("Error playing gunshot sound:", error);
     });
 }
 
@@ -74,6 +79,17 @@ var myGameArea = {
         this.canvas.width = 500;
         this.canvas.height = 400;
         this.context = this.canvas.getContext("2d");
+
+        // Load background image with error handling
+        backgroundImage = new Image();
+        backgroundImage.src = "./Media/background.jpg";
+        backgroundImage.onload = () => {
+            console.log("Background image loaded...");
+            this.context.drawImage(backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
+        };
+        backgroundImage.onerror = function() {
+            console.error("Error loading background image.");
+        };
 
         // Add the canvas element to the DOM
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
@@ -90,12 +106,9 @@ var myGameArea = {
         alert("Game Over! Your Score: " + this.frameNo);
     },
     adjustSpeed: function() {
-        // Increase speed after 1000 frames (score 1000)
-        if (this.frameNo > 1000) {
-            gameSpeed = 2;
-        }
-        if (this.frameNo > 2000) {
-            gameSpeed = 3;
+        // Increase game speed after reaching 1000 frame intervals
+        if (this.frameNo > 1000 && this.frameNo % 1000 === 0) {
+            gameSpeed += 0.5; // Increase game speed
         }
     }
 }
@@ -169,32 +182,14 @@ function gameObject(width, height, colorOrImage, x, y, type) {
     }
 }
 
-function shootBullet() {
-    // Create a bullet from the game piece's position
-    var bullet = new gameObject(10, 5, "black", myGamePiece.x + myGamePiece.width, myGamePiece.y + myGamePiece.height / 2 - 2.5, "bullet");
-    bullet.speedX = 4 * gameSpeed; // Move the bullet forward with speed based on gameSpeed
-    myBullets.push(bullet);
-    gunshotSound.play().catch(function(error) {
-        console.error("Gunshot sound error:", error);
-    }); // Play shooting sound
-}
-
 function updateGameArea() {
     if (!gamePaused) {
         var x, height, gap, minHeight, maxHeight, minGap, maxGap;
 
-        // Check for collisions
-        for (var i = 0; i < myObstacles.length; i++) {
-            if (myGamePiece.crashWith(myObstacles[i])) {
-                myGameArea.stop();
-                return;
-            }
-        }
-
         // Clear the canvas
         myGameArea.clear();
 
-        // Redraw the background image every frame
+        // Redraw the background image every frame (first)
         myGameArea.context.drawImage(backgroundImage, 0, 0, myGameArea.canvas.width, myGameArea.canvas.height);
 
         myGameArea.frameNo += 1;
@@ -268,7 +263,7 @@ function updateGameArea() {
         myScore.text = "SCORE: " + myGameArea.frameNo;
         myScore.update();
 
-        // Update game piece
+        // Update game piece (AFTER everything else is drawn)
         myGamePiece.newPos();
         myGamePiece.update();
 
@@ -291,23 +286,22 @@ function updateGameArea() {
     }
 }
 
-function everyinterval(n) {
-    return (myGameArea.frameNo / n) % 1 === 0;
-}
-
 function togglePause() {
-    if (!gamePaused) {
-        gamePaused = true;
-        backgroundMusic.pause(); // Pause the background music
-        document.getElementById("pauseButton").textContent = "Resume Game";
+    gamePaused = !gamePaused;
+    if (gamePaused) {
+        backgroundMusic.pause();
     } else {
-        gamePaused = false;
-        backgroundMusic.play().catch(function(error) {
-            console.error("Error resuming background music:", error);
-        }); // Resume background music
-        document.getElementById("pauseButton").textContent = "Pause Game";
+        backgroundMusic.play();
     }
 }
+
+function everyinterval(n) {
+    if ((myGameArea.frameNo / n) % 1 == 0) {
+        return true;
+    }
+    return false;
+}
+
 
 
 
