@@ -34,6 +34,8 @@ document.getElementById("startButton").addEventListener("click", function() {
 document.getElementById("pauseButton").addEventListener("click", togglePause);
 
 function startGame() {
+    console.log("Game starting...");
+    
     // Initialize game piece (character image)
     myGamePiece = new gameObject(30, 30, "./images/character.png", 10, 120, "image");
 
@@ -56,6 +58,8 @@ function startGame() {
 var myGameArea = {
     canvas: document.createElement("canvas"),
     start: function() {
+        console.log("Game area started...");
+
         this.canvas.width = 480;
         this.canvas.height = 270;
         this.context = this.canvas.getContext("2d");
@@ -64,13 +68,17 @@ var myGameArea = {
         var backgroundImage = new Image();
         backgroundImage.src = "./images/background.png";
         backgroundImage.onload = () => {
+            console.log("Background image loaded...");
             this.context.drawImage(backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
         };
         backgroundImage.onerror = function() {
             console.error("Error loading background image.");
         };
 
+        // Add the canvas element to the DOM
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        console.log("Canvas added to DOM.");
+
         this.frameNo = 0;
         this.interval = setInterval(updateGameArea, 20); // Game loop
     },
@@ -121,7 +129,6 @@ function gameObject(width, height, colorOrImage, x, y, type) {
     }
 
     this.hitEdges = function() {
-        // Restrict the object from moving out of the canvas
         if (this.x < 0) {
             this.x = 0;
         }
@@ -237,6 +244,7 @@ function togglePause() {
         document.getElementById("pauseButton").textContent = "Pause Game";
     }
 }
+
 
 
 
