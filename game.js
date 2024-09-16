@@ -9,12 +9,13 @@ document.getElementById("startButton").addEventListener("click", startGame);
 document.getElementById("pauseButton").addEventListener("click", togglePause);
 
 function startGame() {
-    // Replace with a character image
-    this.image.src = "images/character.png"; // Replace with the correct image path
-    myGamePiece = new gameObject(30, 30, "character.png", 10, 120, "image");
+    // Initialize game piece
+    myGamePiece = new gameObject(30, 30, "images/character.png", 10, 120, "image");
 
+    // Initialize score display
     myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
 
+    // Start game area
     myGameArea.start();
     backgroundMusic.play(); // Start background music
 
@@ -40,6 +41,10 @@ var myGameArea = {
     },
     clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    },
+    stop: function() {
+        clearInterval(this.interval);
+        alert("Game Over! Your Score: " + this.frameNo);
     }
 }
 
@@ -117,6 +122,7 @@ function updateGameArea() {
         // Check for collisions
         for (var i = 0; i < myObstacles.length; i++) {
             if (myGamePiece.crashWith(myObstacles[i])) {
+                myGameArea.stop(); // Stop the game if a collision occurs
                 return;
             }
         }
@@ -136,8 +142,8 @@ function updateGameArea() {
             gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
 
             // Add top and bottom pole images
-            myObstacles.push(new gameObject(10, height, "pole.png", x, 0, "image")); // Top pole
-            myObstacles.push(new gameObject(10, x - height - gap, "pole.png", x, height + gap, "image")); // Bottom pole
+            myObstacles.push(new gameObject(10, height, "images/pole.png", x, 0, "image")); // Top pole
+            myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, "images/pole.png", x, height + gap, "image")); // Bottom pole
         }
 
         // Move and update obstacles
@@ -188,4 +194,5 @@ function togglePause() {
         document.getElementById("pauseButton").textContent = "Pause Game"; // Update button text
     }
 }
+
 
