@@ -3,23 +3,45 @@ var myObstacles = [];
 var myScore;
 var keys = {};
 var gamePaused = false;
-var backgroundMusic = new Audio("/Media/backgroundMusic.mp3"); // Correctly linking background music
-var gunshotSound = new Audio("/Media/gunshot.mp3"); // Correctly linking gunshot sound
-var jumpSound = new Audio("/Media/jump.mp3"); // Correctly linking jump sound
 
-document.getElementById("startButton").addEventListener("click", startGame);
+// Add error handling to audio
+var backgroundMusic = new Audio();
+backgroundMusic.src = "./Media/backgroundMusic.mp3";
+backgroundMusic.onerror = function() {
+    console.error("Error loading background music.");
+};
+backgroundMusic.muted = false; // Unmute if autoplay is an issue
+
+var gunshotSound = new Audio();
+gunshotSound.src = "./Media/gunshot.mp3";
+gunshotSound.onerror = function() {
+    console.error("Error loading gunshot sound.");
+};
+
+var jumpSound = new Audio();
+jumpSound.src = "./Media/jump.mp3";
+jumpSound.onerror = function() {
+    console.error("Error loading jump sound.");
+};
+
+// Add event listeners
+document.getElementById("startButton").addEventListener("click", function() {
+    startGame();
+    backgroundMusic.play().catch(function(error) {
+        console.error("Autoplay blocked or error playing background music:", error);
+    }); // Try to play background music on game start
+});
 document.getElementById("pauseButton").addEventListener("click", togglePause);
 
 function startGame() {
     // Initialize game piece (character image)
-    myGamePiece = new gameObject(30, 30, "/images/character.png", 10, 120, "image");
+    myGamePiece = new gameObject(30, 30, "./images/character.png", 10, 120, "image");
 
     // Initialize score display
     myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
 
-    // Start game area and background music
+    // Start game area
     myGameArea.start();
-    backgroundMusic.play(); // Start background music
 
     // Add event listeners for keydown and keyup
     window.addEventListener('keydown', function(e) {
@@ -38,11 +60,14 @@ var myGameArea = {
         this.canvas.height = 270;
         this.context = this.canvas.getContext("2d");
 
-        // Draw background image
+        // Load background image with error handling
         var backgroundImage = new Image();
-        backgroundImage.src = "images/background.png"; // Linking background image
+        backgroundImage.src = "./images/background.png";
         backgroundImage.onload = () => {
             this.context.drawImage(backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
+        };
+        backgroundImage.onerror = function() {
+            console.error("Error loading background image.");
         };
 
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
@@ -69,7 +94,10 @@ function gameObject(width, height, colorOrImage, x, y, type) {
 
     if (type === "image") {
         this.image = new Image();
-        this.image.src = colorOrImage; // Load the image file
+        this.image.src = colorOrImage;
+        this.image.onerror = function() {
+            console.error("Error loading game object image: " + colorOrImage);
+        };
     }
 
     this.update = function() {
@@ -79,7 +107,7 @@ function gameObject(width, height, colorOrImage, x, y, type) {
             ctx.fillStyle = colorOrImage;
             ctx.fillText(this.text, this.x, this.y);
         } else if (this.type == "image") {
-            ctx.drawImage(this.image, this.x, this.y, this.width, this.height); // Draw the image
+            ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
         } else {
             ctx.fillStyle = colorOrImage;
             ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -89,7 +117,7 @@ function gameObject(width, height, colorOrImage, x, y, type) {
     this.newPos = function() {
         this.x += this.speedX;
         this.y += this.speedY;
-        this.hitEdges(); // Prevent the object from moving out of the canvas
+        this.hitEdges();
     }
 
     this.hitEdges = function() {
@@ -152,8 +180,8 @@ function updateGameArea() {
             gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
 
             // Add top and bottom pole images
-            myObstacles.push(new gameObject(10, height, "Media/pole.png", x, 0, "image")); // Top pole
-            myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, "Media/pole.png", x, height + gap, "image")); // Bottom pole
+            myObstacles.push(new gameObject(10, height, "./Media/pole.png", x, 0, "image")); // Top pole
+            myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, "./Media/pole.png", x, height + gap, "image")); // Bottom pole
         }
 
         // Move and update obstacles
@@ -173,7 +201,9 @@ function updateGameArea() {
         // Arrow key controls
         if (keys['ArrowUp']) {
             myGamePiece.speedY = -2; // Move up
-            jumpSound.play(); // Play jump sound
+            jumpSound.play().catch(function(error) {
+                console.error("Jump sound error:", error);
+            }); // Play jump sound
         } else if (keys['ArrowDown']) {
             myGamePiece.speedY = 2;  // Move down
         } else {
@@ -201,11 +231,12 @@ function togglePause() {
         document.getElementById("pauseButton").textContent = "Resume Game";
     } else {
         gamePaused = false;
-        backgroundMusic.play(); // Resume the background music
+        backgroundMusic.play().catch(function(error) {
+            console.error("Error resuming background music:", error);
+        }); // Resume background music
         document.getElementById("pauseButton").textContent = "Pause Game";
     }
 }
 
-}
 
 
