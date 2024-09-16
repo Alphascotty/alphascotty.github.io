@@ -1,10 +1,12 @@
 var myGamePiece;
 var myObstacles = [];
-var myBullets = []; // New array to store bullets
+var myBullets = [];
+var myFlyingObstacles = []; // New array for flying obstacles
 var myScore;
 var keys = {};
 var gamePaused = false;
-var backgroundImage; // Global variable for background image
+var backgroundImage;
+var gameSpeed = 1; // Variable to control game speed
 
 // Add error handling to audio
 var backgroundMusic = new Audio();
@@ -12,18 +14,13 @@ backgroundMusic.src = "./Media/backgroundMusic.mp3";
 backgroundMusic.onerror = function() {
     console.error("Error loading background music.");
 };
+backgroundMusic.loop = true; // Loop background music
 backgroundMusic.muted = false; // Unmute if autoplay is an issue
 
 var gunshotSound = new Audio();
 gunshotSound.src = "./Media/gunshot.mp3";
 gunshotSound.onerror = function() {
     console.error("Error loading gunshot sound.");
-};
-
-var jumpSound = new Audio();
-jumpSound.src = "./Media/jump.mp3";
-jumpSound.onerror = function() {
-    console.error("Error loading jump sound.");
 };
 
 // Add event listeners
@@ -91,6 +88,15 @@ var myGameArea = {
     stop: function() {
         clearInterval(this.interval);
         alert("Game Over! Your Score: " + this.frameNo);
+    },
+    adjustSpeed: function() {
+        // Increase speed after 1000 frames (score 1000)
+        if (this.frameNo > 1000) {
+            gameSpeed = 2;
+        }
+        if (this.frameNo > 2000) {
+            gameSpeed = 3;
+        }
     }
 }
 
@@ -166,7 +172,7 @@ function gameObject(width, height, colorOrImage, x, y, type) {
 function shootBullet() {
     // Create a bullet from the game piece's position
     var bullet = new gameObject(10, 5, "black", myGamePiece.x + myGamePiece.width, myGamePiece.y + myGamePiece.height / 2 - 2.5, "bullet");
-    bullet.speedX = 4; // Move the bullet forward
+    bullet.speedX = 4 * gameSpeed; // Move the bullet forward with speed based on gameSpeed
     myBullets.push(bullet);
     gunshotSound.play().catch(function(error) {
         console.error("Gunshot sound error:", error);
@@ -193,7 +199,10 @@ function updateGameArea() {
 
         myGameArea.frameNo += 1;
 
-        // Create new obstacles (poles with Media)
+        // Adjust game speed based on score
+        myGameArea.adjustSpeed();
+
+        // Create new obstacles (poles and flying objects)
         if (myGameArea.frameNo == 1 || everyinterval(150)) {
             x = myGameArea.canvas.width;
             minHeight = 20;
@@ -206,32 +215,52 @@ function updateGameArea() {
             // Add top and bottom pole Media
             myObstacles.push(new gameObject(10, height, "./Media/pole.png", x, 0, "image")); // Top pole
             myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, "./Media/pole.png", x, height + gap, "image")); // Bottom pole
+
+            // Add a random flying object (same behavior as poles, but random y position)
+            var flyingY = Math.floor(Math.random() * (myGameArea.canvas.height - 100)); // Random y position for flying object
+            myFlyingObstacles.push(new gameObject(20, 20, "./Media/flying.png", x, flyingY, "image")); // Flying object
         }
 
-        // Move and update obstacles
+        // Move and update obstacles (poles)
         for (var i = myObstacles.length - 1; i >= 0; i--) {
-            myObstacles[i].x -= 1;
+            myObstacles[i].x -= 1 * gameSpeed; // Increase speed based on gameSpeed
             myObstacles[i].update();
+
+            // Remove off-screen obstacles
+            if (myObstacles[i].x + myObstacles[i].width < 0) {
+                myObstacles.splice(i, 1);
+            }
+        }
+
+        // Move and update flying obstacles
+        for (var i = myFlyingObstacles.length - 1; i >= 0; i--) {
+            myFlyingObstacles[i].x -= 1 * gameSpeed;
+            myFlyingObstacles[i].update();
+
+            // Remove off-screen flying obstacles
+            if (myFlyingObstacles[i].x + myFlyingObstacles[i].width < 0) {
+                myFlyingObstacles.splice(i, 1);
+            }
         }
 
         // Move and update bullets
         for (var i = myBullets.length - 1; i >= 0; i--) {
-            myBullets[i].newPos();
+            myBullets[i].x += myBullets[i].speedX;
             myBullets[i].update();
 
-            // Check if bullet hits any obstacle
+            // Remove off-screen bullets
+            if (myBullets[i].x > myGameArea.canvas.width) {
+                myBullets.splice(i, 1);
+            }
+
+            // Check for bullet-obstacle collisions
             for (var j = myObstacles.length - 1; j >= 0; j--) {
-                if (myBullets[i].crashWith(myObstacles[j])) {
-                    // Remove the bullet and the obstacle
+                if (myBullets[i] && myBullets[i].crashWith(myObstacles[j])) {
+                    // Remove both the bullet and the obstacle on collision
                     myBullets.splice(i, 1);
                     myObstacles.splice(j, 1);
                     break;
                 }
-            }
-
-            // Remove bullets that go off-screen
-            if (myBullets[i] && myBullets[i].x > myGameArea.canvas.width) {
-                myBullets.splice(i, 1);
             }
         }
 
@@ -245,20 +274,17 @@ function updateGameArea() {
 
         // Arrow key controls
         if (keys['ArrowUp']) {
-            myGamePiece.speedY = -2; // Move up
-            jumpSound.play().catch(function(error) {
-                console.error("Jump sound error:", error);
-            }); // Play jump sound
+            myGamePiece.speedY = -2 * gameSpeed; // Move up
         } else if (keys['ArrowDown']) {
-            myGamePiece.speedY = 2;  // Move down
+            myGamePiece.speedY = 2 * gameSpeed;  // Move down
         } else {
             myGamePiece.speedY = 0;
         }
 
         if (keys['ArrowLeft']) {
-            myGamePiece.speedX = -2; // Move left
+            myGamePiece.speedX = -2 * gameSpeed; // Move left
         } else if (keys['ArrowRight']) {
-            myGamePiece.speedX = 2;  // Move right
+            myGamePiece.speedX = 2 * gameSpeed;  // Move right
         } else {
             myGamePiece.speedX = 0;
         }
@@ -282,6 +308,7 @@ function togglePause() {
         document.getElementById("pauseButton").textContent = "Pause Game";
     }
 }
+
 
 
 
