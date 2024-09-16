@@ -60,8 +60,8 @@ var myGameArea = {
     start: function() {
         console.log("Game area started...");
 
-        this.canvas.width = 480;
-        this.canvas.height = 270;
+        this.canvas.width = 500;
+        this.canvas.height = 400;
         this.context = this.canvas.getContext("2d");
 
         // Load background image with error handling
