@@ -1,17 +1,18 @@
 var myGamePiece;
 var myObstacles = [];
+var myBullets = []; // Array to store bullets
 var myScore;
 var keys = {};
 var gamePaused = false;
-var backgroundImage; // Global variable for background image
+var backgroundImage;
 
-// Add error handling to audio
+// Audio setup
 var backgroundMusic = new Audio();
 backgroundMusic.src = "./Media/backgroundMusic.mp3";
 backgroundMusic.onerror = function() {
     console.error("Error loading background music.");
 };
-backgroundMusic.muted = false; // Unmute if autoplay is an issue
+backgroundMusic.muted = false;
 
 var gunshotSound = new Audio();
 gunshotSound.src = "./Media/gunshot.mp3";
@@ -25,42 +26,34 @@ jumpSound.onerror = function() {
     console.error("Error loading jump sound.");
 };
 
-// Add event listeners
+// Event listeners
 document.getElementById("startButton").addEventListener("click", function() {
     startGame();
     backgroundMusic.play().catch(function(error) {
         console.error("Autoplay blocked or error playing background music:", error);
-    }); // Try to play background music on game start
+    });
 });
 document.getElementById("pauseButton").addEventListener("click", togglePause);
+window.addEventListener('keydown', function(e) {
+    keys[e.key] = true;
+});
+window.addEventListener('keyup', function(e) {
+    keys[e.key] = false;
+});
 
 function startGame() {
     console.log("Game starting...");
-
-    // Initialize game piece (character image)
+    
     myGamePiece = new gameObject(30, 30, "./Media/character.png", 10, 120, "image");
-
-    // Initialize score display
     myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
 
-    // Load background image globally
     backgroundImage = new Image();
     backgroundImage.src = "./Media/background.jpg";
     backgroundImage.onerror = function() {
         console.error("Error loading background image.");
     };
 
-    // Start game area
     myGameArea.start();
-
-    // Add event listeners for keydown and keyup
-    window.addEventListener('keydown', function(e) {
-        keys[e.key] = true;
-    });
-
-    window.addEventListener('keyup', function(e) {
-        keys[e.key] = false;
-    });
 }
 
 var myGameArea = {
@@ -72,12 +65,11 @@ var myGameArea = {
         this.canvas.height = 400;
         this.context = this.canvas.getContext("2d");
 
-        // Add the canvas element to the DOM
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         console.log("Canvas added to DOM.");
 
         this.frameNo = 0;
-        this.interval = setInterval(updateGameArea, 20); // Game loop
+        this.interval = setInterval(updateGameArea, 20);
     },
     clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -126,18 +118,10 @@ function gameObject(width, height, colorOrImage, x, y, type) {
     }
 
     this.hitEdges = function() {
-        if (this.x < 0) {
-            this.x = 0;
-        }
-        if (this.x > myGameArea.canvas.width - this.width) {
-            this.x = myGameArea.canvas.width - this.width;
-        }
-        if (this.y < 0) {
-            this.y = 0;
-        }
-        if (this.y > myGameArea.canvas.height - this.height) {
-            this.y = myGameArea.canvas.height - this.height;
-        }
+        if (this.x < 0) this.x = 0;
+        if (this.x > myGameArea.canvas.width - this.width) this.x = myGameArea.canvas.width - this.width;
+        if (this.y < 0) this.y = 0;
+        if (this.y > myGameArea.canvas.height - this.height) this.y = myGameArea.canvas.height - this.height;
     }
 
     this.crashWith = function(otherobj) {
@@ -157,11 +141,20 @@ function gameObject(width, height, colorOrImage, x, y, type) {
     }
 }
 
+function createBullet() {
+    var bullet = new gameObject(10, 5, "red", myGamePiece.x + myGamePiece.width, myGamePiece.y + myGamePiece.height / 2, "color");
+    bullet.speedX = 5; // Move bullet forward
+    myBullets.push(bullet);
+    gunshotSound.play().catch(function(error) {
+        console.error("Gunshot sound error:", error);
+    });
+}
+
 function updateGameArea() {
     if (!gamePaused) {
         var x, height, gap, minHeight, maxHeight, minGap, maxGap;
 
-        // Check for collisions
+        // Check for collisions between game piece and obstacles
         for (var i = 0; i < myObstacles.length; i++) {
             if (myGamePiece.crashWith(myObstacles[i])) {
                 myGameArea.stop();
@@ -169,10 +162,25 @@ function updateGameArea() {
             }
         }
 
+        // Check for collisions between bullets and obstacles
+        for (var i = myBullets.length - 1; i >= 0; i--) {
+            var bullet = myBullets[i];
+            bullet.x += bullet.speedX;
+            bullet.update();
+            
+            for (var j = myObstacles.length - 1; j >= 0; j--) {
+                if (bullet.crashWith(myObstacles[j])) {
+                    // Remove the obstacle that was hit
+                    myObstacles.splice(j, 1);
+                    // Remove the bullet that hit the obstacle
+                    myBullets.splice(i, 1);
+                    break;
+                }
+            }
+        }
+
         // Clear the canvas
         myGameArea.clear();
-
-        // Redraw the background image every frame
         myGameArea.context.drawImage(backgroundImage, 0, 0, myGameArea.canvas.width, myGameArea.canvas.height);
 
         myGameArea.frameNo += 1;
@@ -187,7 +195,6 @@ function updateGameArea() {
             maxGap = 200;
             gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
 
-            // Add top and bottom pole Media
             myObstacles.push(new gameObject(10, height, "./Media/pole.png", x, 0, "image")); // Top pole
             myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, "./Media/pole.png", x, height + gap, "image")); // Bottom pole
         }
@@ -211,7 +218,7 @@ function updateGameArea() {
             myGamePiece.speedY = -2; // Move up
             jumpSound.play().catch(function(error) {
                 console.error("Jump sound error:", error);
-            }); // Play jump sound
+            });
         } else if (keys['ArrowDown']) {
             myGamePiece.speedY = 2;  // Move down
         } else {
@@ -225,26 +232,18 @@ function updateGameArea() {
         } else {
             myGamePiece.speedX = 0;
         }
+
+        // Shoot bullet on spacebar press
+        if (keys[' ']) {
+            createBullet();
+            keys[' '] = false; // Prevent continuous shooting
+        }
     }
 }
 
 function everyinterval(n) {
-    return (myGameArea.frameNo / n) % 1 === 0;
-}
+    return
 
-function togglePause() {
-    if (!gamePaused) {
-        gamePaused = true;
-        backgroundMusic.pause(); // Pause the background music
-        document.getElementById("pauseButton").textContent = "Resume Game";
-    } else {
-        gamePaused = false;
-        backgroundMusic.play().catch(function(error) {
-            console.error("Error resuming background music:", error);
-        }); // Resume background music
-        document.getElementById("pauseButton").textContent = "Pause Game";
-    }
-}
 
 
 
