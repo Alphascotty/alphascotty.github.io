@@ -66,7 +66,7 @@ var myGameArea = {
 
         // Load background image with error handling
         var backgroundImage = new Image();
-        backgroundImage.src = "./Media/background.png";
+        backgroundImage.src = "./Media/background.jpg";
         backgroundImage.onload = () => {
             console.log("Background image loaded...");
             this.context.drawImage(backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
