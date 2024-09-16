@@ -12,7 +12,7 @@ document.getElementById("pauseButton").addEventListener("click", togglePause);
 
 function startGame() {
     // Initialize game piece (character image)
-    myGamePiece = new gameObject(30, 30, "Media/character.png", 10, 120, "image");
+    myGamePiece = new gameObject(30, 30, "images/character.png", 10, 120, "image");
 
     // Initialize score display
     myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
@@ -40,7 +40,7 @@ var myGameArea = {
 
         // Draw background image
         var backgroundImage = new Image();
-        backgroundImage.src = "Media/background.png"; // Linking background image
+        backgroundImage.src = "images/background.png"; // Linking background image
         backgroundImage.onload = () => {
             this.context.drawImage(backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
         };
