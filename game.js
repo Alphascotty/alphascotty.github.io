@@ -37,7 +37,7 @@ function startGame() {
     console.log("Game starting...");
     
     // Initialize game piece (character image)
-    myGamePiece = new gameObject(30, 30, "./images/character.png", 10, 120, "image");
+    myGamePiece = new gameObject(30, 30, "./Media/character.png", 10, 120, "image");
 
     // Initialize score display
     myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
@@ -66,7 +66,7 @@ var myGameArea = {
 
         // Load background image with error handling
         var backgroundImage = new Image();
-        backgroundImage.src = "./images/background.png";
+        backgroundImage.src = "./Media/background.png";
         backgroundImage.onload = () => {
             console.log("Background image loaded...");
             this.context.drawImage(backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
@@ -176,7 +176,7 @@ function updateGameArea() {
         myGameArea.clear();
         myGameArea.frameNo += 1;
 
-        // Create new obstacles (poles with images)
+        // Create new obstacles (poles with Media)
         if (myGameArea.frameNo == 1 || everyinterval(150)) {
             x = myGameArea.canvas.width;
             minHeight = 20;
@@ -186,7 +186,7 @@ function updateGameArea() {
             maxGap = 200;
             gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
 
-            // Add top and bottom pole images
+            // Add top and bottom pole Media
             myObstacles.push(new gameObject(10, height, "./Media/pole.png", x, 0, "image")); // Top pole
             myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, "./Media/pole.png", x, height + gap, "image")); // Bottom pole
         }
