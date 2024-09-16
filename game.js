@@ -3,6 +3,7 @@ var myObstacles = [];
 var myScore;
 var keys = {};
 var gamePaused = false;
+var backgroundImage; // Global variable for background image
 
 // Add error handling to audio
 var backgroundMusic = new Audio();
@@ -35,12 +36,19 @@ document.getElementById("pauseButton").addEventListener("click", togglePause);
 
 function startGame() {
     console.log("Game starting...");
-    
+
     // Initialize game piece (character image)
     myGamePiece = new gameObject(30, 30, "./Media/character.png", 10, 120, "image");
 
     // Initialize score display
     myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
+
+    // Load background image globally
+    backgroundImage = new Image();
+    backgroundImage.src = "./Media/background.jpg";
+    backgroundImage.onerror = function() {
+        console.error("Error loading background image.");
+    };
 
     // Start game area
     myGameArea.start();
@@ -63,17 +71,6 @@ var myGameArea = {
         this.canvas.width = 500;
         this.canvas.height = 400;
         this.context = this.canvas.getContext("2d");
-
-        // Load background image with error handling
-        var backgroundImage = new Image();
-        backgroundImage.src = "./Media/background.jpg";
-        backgroundImage.onload = () => {
-            console.log("Background image loaded...");
-            this.context.drawImage(backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
-        };
-        backgroundImage.onerror = function() {
-            console.error("Error loading background image.");
-        };
 
         // Add the canvas element to the DOM
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
@@ -174,6 +171,10 @@ function updateGameArea() {
 
         // Clear the canvas
         myGameArea.clear();
+
+        // Redraw the background image every frame
+        myGameArea.context.drawImage(backgroundImage, 0, 0, myGameArea.canvas.width, myGameArea.canvas.height);
+
         myGameArea.frameNo += 1;
 
         // Create new obstacles (poles with Media)
@@ -244,6 +245,7 @@ function togglePause() {
         document.getElementById("pauseButton").textContent = "Pause Game";
     }
 }
+
 
 
 
