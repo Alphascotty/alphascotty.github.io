@@ -216,12 +216,12 @@ function updateGameArea() {
 
             // Add a random flying object (same behavior as poles, but random y position)
             var flyingY = Math.floor(Math.random() * (myGameArea.canvas.height - 100)); // Random y position for flying object
-            myFlyingObstacles.push(new gameObject(20, 20, "./Media/flying.png", x, flyingY, "image")); // Flying object
+            myFlyingObstacles.push(new gameObject(20, 20, "./Media/flying.png", x, flyingY, "image")); // Flying obstacle
         }
 
-        // Move and update obstacles (poles)
+        // Move and update obstacles
         for (var i = myObstacles.length - 1; i >= 0; i--) {
-            myObstacles[i].x -= 1 * gameSpeed; // Increase speed based on gameSpeed
+            myObstacles[i].x -= 1 * gameSpeed;
             myObstacles[i].update();
 
             // Remove off-screen obstacles
@@ -304,6 +304,7 @@ function everyinterval(n) {
     }
     return false;
 }
+
 
 
 
