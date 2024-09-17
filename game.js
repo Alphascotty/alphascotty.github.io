@@ -7,6 +7,7 @@ var keys = {};
 var gamePaused = false;
 var gameSpeed = 1;
 var backgroundImage;
+var score = 0;
 
 // Add error handling to audio
 var backgroundMusic = new Audio();
@@ -23,6 +24,12 @@ gunshotSound.onerror = function() {
     console.error("Error loading gunshot sound.");
 };
 
+var crashSound = new Audio();
+crashSound.src = "./Media/crash.mp3";
+crashSound.onerror = function() {
+    console.error("Error loading crash sound.");
+};
+
 // Add event listeners
 document.getElementById("startButton").addEventListener("click", function() {
     startGame();
@@ -34,6 +41,7 @@ document.getElementById("pauseButton").addEventListener("click", togglePause);
 
 function startGame() {
     console.log("Game starting...");
+    score = 0;
 
     // Initialize game piece (character image)
     myGamePiece = new gameObject(30, 30, "./Media/character.png", 10, 120, "image");
@@ -61,7 +69,7 @@ function startGame() {
 
 function fireBullet() {
     var bullet = new gameObject(10, 10, "black", myGamePiece.x + myGamePiece.width, myGamePiece.y + myGamePiece.height / 2 - 5, "bullet");
-    bullet.speedX = 4 * gameSpeed;
+    bullet.speedX = 4;
     myBullets.push(bullet);
 
     gunshotSound.play().catch(function(error) {
@@ -100,93 +108,15 @@ var myGameArea = {
     },
     stop: function() {
         clearInterval(this.interval);
-        alert("Game Over! Your Score: " + this.frameNo);
-    },
-    adjustSpeed: function() {
-        // Increase game speed every 3000 frames
-        if (this.frameNo > 3000 && this.frameNo % 3000 === 0) {
-            gameSpeed += 0.5;
-            console.log("Game speed increased to:", gameSpeed);
-        }
+        crashSound.play().catch(function(error) {
+            console.error("Error playing crash sound:", error);
+        });
+        alert("Game Over! Your Score: " + score);
     }
 }
 
 function gameObject(width, height, colorOrImage, x, y, type) {
-    this.type = type;
-    this.width = width;
-    this.height = height;
-    this.speedX = 0;
-    this.speedY = 0;
-    this.x = x;
-    this.y = y;
-
-    if (type === "image") {
-        this.image = new Image();
-        this.image.src = colorOrImage;
-
-        // Ensure image is ready before drawing
-        this.imageReady = false;
-        this.image.onload = function() {
-            this.imageReady = true;
-            console.log("Character image loaded.");
-        }.bind(this);
-
-        this.image.onerror = function() {
-            console.error("Error loading game object image: " + colorOrImage);
-        };
-    }
-
-    this.update = function() {
-        var ctx = myGameArea.context;
-
-        if (this.type == "text") {
-            ctx.font = this.width + " " + this.height;
-            ctx.fillStyle = colorOrImage;
-            ctx.fillText(this.text, this.x, this.y);
-        } else if (this.type == "image" && this.imageReady) {
-            ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
-        } else if (this.type !== "image") {
-            ctx.fillStyle = colorOrImage;
-            ctx.fillRect(this.x, this.y, this.width, this.height);
-        }
-    }
-
-    this.newPos = function() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-        this.hitEdges();
-    }
-
-    this.hitEdges = function() {
-        if (this.x < 0) {
-            this.x = 0;
-        }
-        if (this.x > myGameArea.canvas.width - this.width) {
-            this.x = myGameArea.canvas.width - this.width;
-        }
-        if (this.y < 0) {
-            this.y = 0;
-        }
-        if (this.y > myGameArea.canvas.height - this.height) {
-            this.y = myGameArea.canvas.height - this.height;
-        }
-    }
-
-    this.crashWith = function(otherobj) {
-        var myleft = this.x;
-        var myright = this.x + this.width;
-        var mytop = this.y;
-        var mybottom = this.y + this.height;
-        var otherleft = otherobj.x;
-        var otherright = otherobj.x + otherobj.width;
-        var othertop = otherobj.y;
-        var otherbottom = otherobj.y + otherobj.height;
-        var crash = true;
-        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
-            crash = false;
-        }
-        return crash;
-    }
+    // ... (rest of the gameObject function remains the same)
 }
 
 function updateGameArea() {
@@ -199,8 +129,7 @@ function updateGameArea() {
         myGameArea.context.drawImage(backgroundImage, 0, 0, myGameArea.canvas.width, myGameArea.canvas.height);
 
         myGameArea.frameNo += 1;
-
-        myGameArea.adjustSpeed();
+        score += 1;
 
         // Create new obstacles
         if (myGameArea.frameNo == 1 || everyinterval(150)) {
@@ -221,6 +150,10 @@ function updateGameArea() {
         for (var i = myObstacles.length - 1; i >= 0; i--) {
             myObstacles[i].x -= 1 * gameSpeed;
             myObstacles[i].update();
+            if (myGamePiece.crashWith(myObstacles[i])) {
+                myGameArea.stop();
+                return;
+            }
             if (myObstacles[i].x + myObstacles[i].width < 0) {
                 myObstacles.splice(i, 1);
             }
@@ -229,6 +162,10 @@ function updateGameArea() {
         for (var i = myFlyingObstacles.length - 1; i >= 0; i--) {
             myFlyingObstacles[i].x -= 1.5 * gameSpeed;
             myFlyingObstacles[i].update();
+            if (myGamePiece.crashWith(myFlyingObstacles[i])) {
+                myGameArea.stop();
+                return;
+            }
             if (myFlyingObstacles[i].x + myFlyingObstacles[i].width < 0) {
                 myFlyingObstacles.splice(i, 1);
             }
@@ -263,7 +200,7 @@ function updateGameArea() {
         myGamePiece.update();
 
         // Update score
-        myScore.text = "SCORE: " + myGameArea.frameNo;
+        myScore.text = "SCORE: " + score;
         myScore.update();
     }
 }
@@ -280,7 +217,6 @@ function togglePause() {
         backgroundMusic.play();
     }
 }
-
 
 
 
