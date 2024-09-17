@@ -125,6 +125,9 @@ function gameObject(width, height, colorOrImage, x, y, type) {
     if (type === "image") {
         this.image = new Image();
         this.image.src = colorOrImage;
+        this.image.onload = function() {
+            console.log("Character image loaded.");
+        };
         this.image.onerror = function() {
             console.error("Error loading game object image: " + colorOrImage);
         };
@@ -137,7 +140,7 @@ function gameObject(width, height, colorOrImage, x, y, type) {
             ctx.fillStyle = colorOrImage;
             ctx.fillText(this.text, this.x, this.y);
         } else if (this.type == "image") {
-            ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+            ctx.drawImage(this.image, this.x, this.y, this.width, this.height); // Ensure image gets drawn
         } else {
             ctx.fillStyle = colorOrImage;
             ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -229,7 +232,7 @@ function updateGameArea() {
 
         // Move and update flying obstacles
         for (var i = myFlyingObstacles.length - 1; i >= 0; i--) {
-            myFlyingObstacles[i].x -= 1 * gameSpeed;
+            myFlyingObstacles[i].x -= 1.5 * gameSpeed; // Flying objects move slightly faster
             myFlyingObstacles[i].update();
 
             // Remove off-screen flying obstacles
@@ -238,7 +241,7 @@ function updateGameArea() {
             }
         }
 
-        // Move and update bullets
+        // Update bullets
         for (var i = myBullets.length - 1; i >= 0; i--) {
             myBullets[i].x += myBullets[i].speedX;
             myBullets[i].update();
@@ -301,6 +304,7 @@ function everyinterval(n) {
     }
     return false;
 }
+
 
 
 
