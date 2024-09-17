@@ -7,7 +7,6 @@ var keys = {};
 var gamePaused = false;
 var gameSpeed = 1;
 var backgroundImage;
-var score = 0;
 
 // Add error handling to audio
 var backgroundMusic = new Audio();
@@ -24,6 +23,7 @@ gunshotSound.onerror = function() {
     console.error("Error loading gunshot sound.");
 };
 
+// Add crash sound
 var crashSound = new Audio();
 crashSound.src = "./Media/crash.mp3";
 crashSound.onerror = function() {
@@ -41,13 +41,13 @@ document.getElementById("pauseButton").addEventListener("click", togglePause);
 
 function startGame() {
     console.log("Game starting...");
-    score = 0;
 
     // Initialize game piece (character image)
     myGamePiece = new gameObject(30, 30, "./Media/character.png", 10, 120, "image");
 
     // Initialize score display
     myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
+    myScore.score = 0; // Initialize score to 0
 
     // Start game area
     myGameArea.start();
@@ -69,7 +69,7 @@ function startGame() {
 
 function fireBullet() {
     var bullet = new gameObject(10, 10, "black", myGamePiece.x + myGamePiece.width, myGamePiece.y + myGamePiece.height / 2 - 5, "bullet");
-    bullet.speedX = 4;
+    bullet.speedX = 4 * gameSpeed;
     myBullets.push(bullet);
 
     gunshotSound.play().catch(function(error) {
@@ -111,7 +111,7 @@ var myGameArea = {
         crashSound.play().catch(function(error) {
             console.error("Error playing crash sound:", error);
         });
-        alert("Game Over! Your Score: " + score);
+        alert("Game Over! Your Score: " + myScore.score);
     }
 }
 
@@ -129,7 +129,6 @@ function updateGameArea() {
         myGameArea.context.drawImage(backgroundImage, 0, 0, myGameArea.canvas.width, myGameArea.canvas.height);
 
         myGameArea.frameNo += 1;
-        score += 1;
 
         // Create new obstacles
         if (myGameArea.frameNo == 1 || everyinterval(150)) {
@@ -182,6 +181,7 @@ function updateGameArea() {
                 if (myBullets[i] && myBullets[i].crashWith(myObstacles[j])) {
                     myBullets.splice(i, 1);
                     myObstacles.splice(j, 1);
+                    myScore.score += 10; // Increase score when hitting an obstacle
                     break;
                 }
             }
@@ -200,7 +200,7 @@ function updateGameArea() {
         myGamePiece.update();
 
         // Update score
-        myScore.text = "SCORE: " + score;
+        myScore.text = "SCORE: " + myScore.score;
         myScore.update();
     }
 }
@@ -217,8 +217,6 @@ function togglePause() {
         backgroundMusic.play();
     }
 }
-
-
 
 
 
