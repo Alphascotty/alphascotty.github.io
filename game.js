@@ -96,6 +96,7 @@ var myGameArea = {
             console.error("Error loading background image.");
         };
 
+        // Add the canvas element to the DOM
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
         console.log("Canvas added to DOM.");
 
@@ -126,8 +127,18 @@ function gameObject(width, height, colorOrImage, x, y, type) {
     if (type === "image") {
         this.image = new Image();
         this.image.src = colorOrImage;
+        this.image.onload = () => {
+            console.log("Image loaded successfully.");
+        };
+        this.image.onerror = () => {
+            console.error("Error loading image:", colorOrImage);
+        };
         this.update = function() {
-            myGameArea.context.drawImage(this.image, this.x, this.y, this.width, this.height);
+            if (this.image.complete) { // Check if image is loaded
+                myGameArea.context.drawImage(this.image, this.x, this.y, this.width, this.height);
+            } else {
+                console.error("Image not yet loaded.");
+            }
         };
     } else if (type === "text") {
         this.text = colorOrImage;
@@ -218,46 +229,34 @@ function updateGameArea() {
         for (var i = myBullets.length - 1; i >= 0; i--) {
             myBullets[i].x += myBullets[i].speedX;
             myBullets[i].update();
-            if (myBullets[i].x > myGameArea.canvas.width) {
-                myBullets.splice(i, 1);
-            }
-
-            for (var j = myObstacles.length - 1; j >= 0; j--) {
-                if (myBullets[i] && myBullets[i].crashWith(myObstacles[j])) {
+            for (var j = myFlyingObstacles.length - 1; j >= 0; j--) {
+                if (myBullets[i].crashWith(myFlyingObstacles[j])) {
+                    myFlyingObstacles.splice(j, 1);
                     myBullets.splice(i, 1);
-                    myObstacles.splice(j, 1);
-                    myScore.score += 10; // Increase score when hitting an obstacle
+                    myScore.score += 1;
                     break;
                 }
             }
+            if (myBullets[i].x > myGameArea.canvas.width) {
+                myBullets.splice(i, 1);
+            }
         }
-
-        // Arrow key movement
-        myGamePiece.speedX = 0;
-        myGamePiece.speedY = 0;
-        if (keys['ArrowUp']) myGamePiece.speedY = -2 * gameSpeed; // Move up
-        if (keys['ArrowDown']) myGamePiece.speedY = 2 * gameSpeed; // Move down
-        if (keys['ArrowLeft']) myGamePiece.speedX = -2 * gameSpeed; // Move left
-        if (keys['ArrowRight']) myGamePiece.speedX = 2 * gameSpeed; // Move right
 
         myGamePiece.newPos();
         myGamePiece.update();
 
+        // Update score display
         myScore.text = "SCORE: " + myScore.score;
         myScore.update();
     }
 }
 
 function everyinterval(n) {
-    return (myGameArea.frameNo / n) % 1 === 0;
+    if ((myGameArea.frameNo / n) % 1 === 0) { return true; }
+    return false;
 }
 
 function togglePause() {
     gamePaused = !gamePaused;
-    if (!gamePaused) {
-        myGameArea.interval = setInterval(updateGameArea, 20);
-    } else {
-        clearInterval(myGameArea.interval);
-    }
 }
 
