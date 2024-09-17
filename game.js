@@ -236,15 +236,13 @@ function updateGameArea() {
         myGamePiece.speedX = 0;
         myGamePiece.speedY = 0;
         if (keys['ArrowUp']) myGamePiece.speedY = -2 * gameSpeed; // Move up
-        if (keys['ArrowDown']) myGamePiece.speedY = 2 * gameSpeed;  // Move down
+        if (keys['ArrowDown']) myGamePiece.speedY = 2 * gameSpeed; // Move down
         if (keys['ArrowLeft']) myGamePiece.speedX = -2 * gameSpeed; // Move left
-        if (keys['ArrowRight']) myGamePiece.speedX = 2 * gameSpeed;  // Move right
+        if (keys['ArrowRight']) myGamePiece.speedX = 2 * gameSpeed; // Move right
 
-        // Update the game piece
         myGamePiece.newPos();
         myGamePiece.update();
 
-        // Update score
         myScore.text = "SCORE: " + myScore.score;
         myScore.update();
     }
@@ -256,11 +254,10 @@ function everyinterval(n) {
 
 function togglePause() {
     gamePaused = !gamePaused;
-    if (gamePaused) {
-        backgroundMusic.pause();
+    if (!gamePaused) {
+        myGameArea.interval = setInterval(updateGameArea, 20);
     } else {
-        backgroundMusic.play();
+        clearInterval(myGameArea.interval);
     }
 }
-
 
