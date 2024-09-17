@@ -103,8 +103,10 @@ var myGameArea = {
         alert("Game Over! Your Score: " + this.frameNo);
     },
     adjustSpeed: function() {
-        if (this.frameNo > 1000 && this.frameNo % 1000 === 0) {
+        // Increase game speed every 3000 frames
+        if (this.frameNo > 3000 && this.frameNo % 3000 === 0) {
             gameSpeed += 0.5;
+            console.log("Game speed increased to:", gameSpeed);
         }
     }
 }
@@ -243,9 +245,18 @@ function updateGameArea() {
                 if (myBullets[i] && myBullets[i].crashWith(myObstacles[j])) {
                     myBullets.splice(i, 1);
                     myObstacles.splice(j, 1);
+                    break;
                 }
             }
         }
+
+        // Arrow key movement
+        myGamePiece.speedX = 0;
+        myGamePiece.speedY = 0;
+        if (keys['ArrowUp']) myGamePiece.speedY = -2 * gameSpeed; // Move up
+        if (keys['ArrowDown']) myGamePiece.speedY = 2 * gameSpeed;  // Move down
+        if (keys['ArrowLeft']) myGamePiece.speedX = -2 * gameSpeed; // Move left
+        if (keys['ArrowRight']) myGamePiece.speedX = 2 * gameSpeed;  // Move right
 
         // Update the game piece
         myGamePiece.newPos();
@@ -263,6 +274,11 @@ function everyinterval(n) {
 
 function togglePause() {
     gamePaused = !gamePaused;
+    if (gamePaused) {
+        backgroundMusic.pause();
+    } else {
+        backgroundMusic.play();
+    }
 }
 
 
