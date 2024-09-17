@@ -23,7 +23,6 @@ gunshotSound.onerror = function() {
     console.error("Error loading gunshot sound.");
 };
 
-// Add crash sound
 var crashSound = new Audio();
 crashSound.src = "./Media/crash.mp3";
 crashSound.onerror = function() {
@@ -113,10 +112,56 @@ var myGameArea = {
         });
         alert("Game Over! Your Score: " + myScore.score);
     }
-}
+};
 
 function gameObject(width, height, colorOrImage, x, y, type) {
-    // ... (rest of the gameObject function remains the same)
+    this.width = width;
+    this.height = height;
+    this.x = x;
+    this.y = y;
+    this.type = type;
+    this.speedX = 0;
+    this.speedY = 0;
+
+    if (type === "image") {
+        this.image = new Image();
+        this.image.src = colorOrImage;
+        this.update = function() {
+            myGameArea.context.drawImage(this.image, this.x, this.y, this.width, this.height);
+        };
+    } else if (type === "text") {
+        this.text = colorOrImage;
+        this.font = width;
+        this.color = height;
+        this.update = function() {
+            myGameArea.context.font = this.font;
+            myGameArea.context.fillStyle = this.color;
+            myGameArea.context.fillText(this.text, this.x, this.y);
+        };
+    } else if (type === "bullet") {
+        this.color = colorOrImage;
+        this.update = function() {
+            myGameArea.context.fillStyle = this.color;
+            myGameArea.context.fillRect(this.x, this.y, this.width, this.height);
+        };
+    }
+
+    this.newPos = function() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+    };
+
+    this.crashWith = function(otherObj) {
+        var myLeft = this.x;
+        var myRight = this.x + this.width;
+        var myTop = this.y;
+        var myBottom = this.y + this.height;
+        var otherLeft = otherObj.x;
+        var otherRight = otherObj.x + otherObj.width;
+        var otherTop = otherObj.y;
+        var otherBottom = otherObj.y + otherObj.height;
+        return !(myBottom < otherTop || myTop > otherBottom || myRight < otherLeft || myLeft > otherRight);
+    };
 }
 
 function updateGameArea() {
@@ -217,6 +262,5 @@ function togglePause() {
         backgroundMusic.play();
     }
 }
-
 
 
