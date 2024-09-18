@@ -31,7 +31,8 @@ function startGame() {
     console.log("Game starting...");
     gameOver = false;
 
-    myGamePiece = new gameObject(30, 30, "./Media/character.png", 10, 120, "image");
+    // Increase game piece size by 10
+    myGamePiece = new gameObject(40, 40, "./Media/character.png", 10, 120, "image");
 
     if (!myScore) {
         myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
@@ -75,8 +76,10 @@ var myGameArea = {
         gameOver = true;
     },
     adjustSpeed: function () {
-        if (this.frameNo > 3000 && this.frameNo % 3000 === 0) {
-            gameSpeed += 0.5;
+        // Double the speed every time the score reaches a new 100 interval
+        var score = Math.floor(this.frameNo / 100);
+        if (score > 0 && score % 2 === 0) {
+            gameSpeed = Math.pow(2, score / 2);  // Double the speed each 100 points
             console.log("Game speed increased to:", gameSpeed);
         }
     }
@@ -232,4 +235,5 @@ function resetGame() {
 window.addEventListener('load', function () {
     console.log("Page loaded. Ready to start the game.");
 });
+
 
