@@ -9,11 +9,11 @@ function startGame() {
     // Add CSS styles dynamically
     var canvas = document.getElementById('gameCanvas');
     canvas.style.border = '1px solid #d3d3d3';
-    canvas.style.backgroundImage = 'url("background.png")'; // Background image path
+    canvas.style.backgroundImage = 'url("./Media/background.png")'; // Background image path
     canvas.style.backgroundSize = 'cover';
 
     backgroundMusic.play();
-    myGamePiece = new component(30, 30, "character.png", 10, 120, "image"); // Character image path
+    myGamePiece = new component(30, 30, "./Media/character.png", 10, 120, "image"); // Character image path
     myGamePiece.gravity = 0.025;  // Gravity is now half the original rate
     myScore = new component("30px", "Consolas", "black", 280, 40, "text");
     myGameArea.start();
@@ -129,8 +129,8 @@ function updateGameArea() {
         minGap = 50;
         maxGap = 200;
         gap = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
-        myObstacles.push(new component(10, height, "pole.png", x, 0, "image")); // Pole image path
-        myObstacles.push(new component(10, x - height - gap, "pole.png", x, height + gap, "image")); // Pole image path
+        myObstacles.push(new component(10, height, "./Media/pole.png", x, 0, "image")); // Pole image path
+        myObstacles.push(new component(10, x - height - gap, "./Media/pole.png", x, height + gap, "image")); // Pole image path
     }
     for (i = 0; i < myObstacles.length; i += 1) {
         myObstacles[i].x += -1;
