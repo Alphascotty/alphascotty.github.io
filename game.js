@@ -1,6 +1,5 @@
 var myGamePiece;
 var myObstacles = [];
-var myFlyingObstacles = [];
 var myScore;
 var keys = {};
 var gamePaused = false;
@@ -200,8 +199,6 @@ function updateGameArea() {
 
             myObstacles.push(new gameObject(10, height, "./Media/pole.png", x, 0, "image")); // Top pole
             myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, "./Media/pole.png", x, height + gap, "image")); // Bottom pole
-            var flyingY = Math.floor(Math.random() * (myGameArea.canvas.height - 100));
-            myFlyingObstacles.push(new gameObject(20, 20, "./Media/flying.png", x, flyingY, "image")); // Flying obstacle
         }
 
         for (var i = myObstacles.length - 1; i >= 0; i--) {
@@ -209,14 +206,6 @@ function updateGameArea() {
             myObstacles[i].update();
             if (myObstacles[i].x + myObstacles[i].width < 0) {
                 myObstacles.splice(i, 1);
-            }
-        }
-
-        for (var i = myFlyingObstacles.length - 1; i >= 0; i--) {
-            myFlyingObstacles[i].x -= 1.5 * gameSpeed;
-            myFlyingObstacles[i].update();
-            if (myFlyingObstacles[i].x + myFlyingObstacles[i].width < 0) {
-                myFlyingObstacles.splice(i, 1);
             }
         }
 
@@ -240,16 +229,6 @@ function updateGameArea() {
         // Check collisions
         for (var i = myObstacles.length - 1; i >= 0; i--) {
             if (myGamePiece.crashWith(myObstacles[i])) {
-                myGameArea.stop();
-                crashSound.play().catch(function(error) {
-                    console.error("Error playing crash sound:", error);
-                });
-                return;
-            }
-        }
-
-        for (var i = myFlyingObstacles.length - 1; i >= 0; i--) {
-            if (myGamePiece.crashWith(myFlyingObstacles[i])) {
                 myGameArea.stop();
                 crashSound.play().catch(function(error) {
                     console.error("Error playing crash sound:", error);
@@ -284,7 +263,6 @@ function togglePause() {
 function resetGame() {
     console.log("Resetting game...");
     myObstacles = [];
-    myFlyingObstacles = [];
     myScore.text = "Score: 0";
     gameSpeed = 1;
     myGameArea.frameNo = 0;
@@ -294,5 +272,4 @@ function resetGame() {
 window.addEventListener('load', function() {
     console.log("Page loaded. Ready to start the game.");
 });
-
 
