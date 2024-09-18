@@ -1,124 +1,172 @@
 var myGamePiece;
 var myObstacles = [];
+var myFlyingObstacles = [];
 var myScore;
+var keys = {};
 var gamePaused = false;
-var backgroundMusic = document.getElementById("backgroundMusic");
-var crashSound = document.getElementById("crashSound");
+var gameSpeed = 1;
+var backgroundImage;
+var crashSound = new Audio();
+var gameOver = false; // New variable to track if the game is over
+
+// Initialize audio objects with error handling
+var backgroundMusic = new Audio("./Media/backgroundMusic.mp3");
+backgroundMusic.loop = true;
+backgroundMusic.muted = false;
+
+crashSound.src = "./Media/crash.mp3";
+
+// Add event listeners for buttons
+document.getElementById("startButton").addEventListener("click", function() {
+    if (gameOver) {
+        resetGame(); // Reset game if it's over
+    }
+    startGame();
+    backgroundMusic.play().catch(function(error) {
+        console.error("Autoplay blocked or error playing background music:", error);
+    });
+});
+
+document.getElementById("pauseButton").addEventListener("click", togglePause);
 
 function startGame() {
-    var canvas = document.getElementById('gameCanvas');
+    console.log("Game starting...");
+    gameOver = false;
 
-    // Add CSS styles dynamically
-    canvas.style.border = '1px solid #d3d3d3';
-    canvas.style.backgroundImage = 'url("./Media/background.png")'; // Background image path
-    canvas.style.backgroundSize = 'cover';
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
+    // Initialize game piece (character image)
+    myGamePiece = new gameObject(30, 30, "./Media/character.png", 10, 120, "image");
 
-    // Start background music
-    backgroundMusic.play().catch(function () {
-        console.log('Background music can only play after user interaction');
+    // Initialize score display (Score retains from previous runs unless resetGame is called)
+    if (!myScore) {
+        myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
+    }
+
+    // Start game area
+    myGameArea.start();
+
+    // Add event listeners for keydown and keyup
+    window.addEventListener('keydown', function(e) {
+        keys[e.key] = true;
     });
 
-    myGamePiece = new component(30, 30, "./Media/character.png", 10, 120, "image"); // Character image path
-    myGamePiece.gravity = 0.025;  // Gravity is now half the original rate
-    myScore = new component("30px", "Consolas", "black", 280, 40, "text");
-
-    myGameArea.start();
+    window.addEventListener('keyup', function(e) {
+        keys[e.key] = false;
+    });
 }
 
 var myGameArea = {
-    canvas: document.getElementById('gameCanvas'),
-    start: function () {
-        this.canvas.width = 500;
-        this.canvas.height = 300;
-        this.context = this.canvas.getContext("2d");
-        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
-        this.frameNo = 0;
-        this.interval = setInterval(updateGameArea, 20); // Game loop starts here
+    canvas: document.createElement("canvas"),
+    start: function() {
+        console.log("Game area started...");
 
-        // Event listeners are added only once
-        if (!this.eventListenersAdded) {
-            window.addEventListener('keydown', function (e) {
-                myGameArea.keys = (myGameArea.keys || []);
-                myGameArea.keys[e.code] = true; // Use 'code' instead of 'keyCode'
-            });
-            window.addEventListener('keyup', function (e) {
-                myGameArea.keys[e.code] = false; // Use 'code' instead of 'keyCode'
-            });
-            this.eventListenersAdded = true;
-        }
+        this.canvas.width = 500;
+        this.canvas.height = 400;
+        this.context = this.canvas.getContext("2d");
+
+        // Load background image with error handling
+        backgroundImage = new Image();
+        backgroundImage.src = "./Media/background.jpg";
+        backgroundImage.onload = () => {
+            console.log("Background image loaded...");
+            this.context.drawImage(backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
+        };
+        backgroundImage.onerror = function() {
+            console.error("Error loading background image.");
+        };
+
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        console.log("Canvas added to DOM.");
+
+        this.frameNo = this.frameNo || 0; // Do not reset frame number unless resetGame is called
+        this.interval = setInterval(updateGameArea, 20); // Game loop
     },
-    clear: function () {
+    clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     },
-    stop: function () {
+    stop: function() {
         clearInterval(this.interval);
-        backgroundMusic.pause();
-        crashSound.play();
+        alert("Game Over! Your Score: " + this.frameNo);
+        gameOver = true;
     },
-    pause: function () {
-        if (!gamePaused) {
-            clearInterval(this.interval);
-            backgroundMusic.pause();
-        } else {
-            this.interval = setInterval(updateGameArea, 20);
-            backgroundMusic.play();
+    adjustSpeed: function() {
+        // Increase game speed every 3000 frames
+        if (this.frameNo > 3000 && this.frameNo % 3000 === 0) {
+            gameSpeed += 0.5;
+            console.log("Game speed increased to:", gameSpeed);
         }
-        gamePaused = !gamePaused;
     }
 }
 
-function component(width, height, color, x, y, type) {
+function gameObject(width, height, colorOrImage, x, y, type) {
     this.type = type;
-    this.score = 0;
     this.width = width;
     this.height = height;
     this.speedX = 0;
     this.speedY = 0;
     this.x = x;
     this.y = y;
-    this.gravity = 0;
-    this.gravitySpeed = 0;
-    if (this.type == "image") {
+
+    if (type === "image") {
         this.image = new Image();
-        this.image.src = color; // Preload image here
+        this.image.src = colorOrImage;
+
+        // Ensure image is ready before drawing
+        this.imageReady = false;
+        this.image.onload = function() {
+            this.imageReady = true;
+            console.log("Image loaded.");
+        }.bind(this);
+
+        this.image.onerror = function() {
+            console.error("Error loading game object image: " + colorOrImage);
+        };
     }
-    this.update = function () {
-        ctx = myGameArea.context;
+
+    this.update = function() {
+        var ctx = myGameArea.context;
+
         if (this.type == "text") {
             ctx.font = this.width + " " + this.height;
-            ctx.fillStyle = color;
+            ctx.fillStyle = colorOrImage;
             ctx.fillText(this.text, this.x, this.y);
-        } else if (this.type == "image") {
+        } else if (this.type === "image" && this.imageReady) {
             ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
-        } else {
-            ctx.fillStyle = color;
+        } else if (this.type !== "image") {
+            ctx.fillStyle = colorOrImage;
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     }
-    this.newPos = function () {
-        this.gravitySpeed += this.gravity;
+
+    this.newPos = function() {
         this.x += this.speedX;
-        this.y += this.speedY + this.gravitySpeed;
-        this.hitBottom();
+        this.y += this.speedY;
+        this.hitEdges();
     }
-    this.hitBottom = function () {
-        var rockbottom = myGameArea.canvas.height - this.height;
-        if (this.y > rockbottom) {
-            this.y = rockbottom;
-            this.gravitySpeed = 0;
+
+    this.hitEdges = function() {
+        if (this.x < 0) {
+            this.x = 0;
+        }
+        if (this.x > myGameArea.canvas.width - this.width) {
+            this.x = myGameArea.canvas.width - this.width;
+        }
+        if (this.y < 0) {
+            this.y = 0;
+        }
+        if (this.y > myGameArea.canvas.height - this.height) {
+            this.y = myGameArea.canvas.height - this.height;
         }
     }
-    this.crashWith = function (otherobj) {
+
+    this.crashWith = function(otherobj) {
         var myleft = this.x;
-        var myright = this.x + (this.width);
+        var myright = this.x + this.width;
         var mytop = this.y;
-        var mybottom = this.y + (this.height);
+        var mybottom = this.y + this.height;
         var otherleft = otherobj.x;
-        var otherright = otherobj.x + (otherobj.width);
+        var otherright = otherobj.x + otherobj.width;
         var othertop = otherobj.y;
-        var otherbottom = otherobj.y + (otherobj.height);
+        var otherbottom = otherobj.y + otherobj.height;
         var crash = true;
         if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
             crash = false;
@@ -128,52 +176,123 @@ function component(width, height, color, x, y, type) {
 }
 
 function updateGameArea() {
-    var x, height, gap, minHeight, maxHeight, minGap, maxGap;
-    for (var i = 0; i < myObstacles.length; i += 1) {
-        if (myGamePiece.crashWith(myObstacles[i])) {
-            myGameArea.stop();
-            return;
+    if (!gamePaused && !gameOver) {
+        var x, height, gap, minHeight, maxHeight, minGap, maxGap;
+
+        myGameArea.clear();
+
+        // Draw the background image first
+        myGameArea.context.drawImage(backgroundImage, 0, 0, myGameArea.canvas.width, myGameArea.canvas.height);
+
+        myGameArea.frameNo += 1;
+
+        myGameArea.adjustSpeed();
+
+        // Create new obstacles
+        if (myGameArea.frameNo == 1 || everyinterval(150)) {
+            x = myGameArea.canvas.width;
+            minHeight = 20;
+            maxHeight = 200;
+            height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
+            minGap = 50;
+            maxGap = 200;
+            gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
+
+            myObstacles.push(new gameObject(10, height, "./Media/pole.png", x, 0, "image")); // Top pole
+            myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, "./Media/pole.png", x, height + gap, "image")); // Bottom pole
+            var flyingY = Math.floor(Math.random() * (myGameArea.canvas.height - 100));
+            myFlyingObstacles.push(new gameObject(20, 20, "./Media/flying.png", x, flyingY, "image")); // Flying obstacle
         }
-    }
-    myGameArea.clear();
-    myGameArea.frameNo += 1;
-    if (myGameArea.frameNo == 1 || everyinterval(150)) {
-        x = myGameArea.canvas.width;
-        minHeight = 20;
-        maxHeight = 200;
-        height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
-        minGap = 50;
-        maxGap = 200;
-        gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
-        myObstacles.push(new component(10, height, "./Media/pole.png", x, 0, "image"));
-        myObstacles.push(new component(10, myGameArea.canvas.height - height - gap, "./Media/pole.png", x, height + gap, "image"));
-    }
-    for (var i = 0; i < myObstacles.length; i += 1) {
-        myObstacles[i].x += -1;
-        myObstacles[i].update();
-    }
-    myScore.text = "SCORE: " + myGameArea.frameNo;
-    myScore.update();
-    myGamePiece.speedX = 0;
-    myGamePiece.speedY = 0;
 
-    // Desktop controls using arrow keys
-    if (myGameArea.keys && myGameArea.keys['ArrowLeft']) { myGamePiece.speedX = -1; } // Left arrow
-    if (myGameArea.keys && myGameArea.keys['ArrowRight']) { myGamePiece.speedX = 1; }  // Right arrow
-    if (myGameArea.keys && myGameArea.keys['ArrowUp']) { myGamePiece.speedY = -1; } // Up arrow
-    if (myGameArea.keys && myGameArea.keys['ArrowDown']) { myGamePiece.speedY = 1; }  // Down arrow
+        for (var i = myObstacles.length - 1; i >= 0; i--) {
+            myObstacles[i].x -= 1 * gameSpeed;
+            myObstacles[i].update();
+            if (myObstacles[i].x + myObstacles[i].width < 0) {
+                myObstacles.splice(i, 1);
+            }
+        }
 
-    // Update position
-    myGamePiece.newPos();
-    myGamePiece.update();
+        for (var i = myFlyingObstacles.length - 1; i >= 0; i--) {
+            myFlyingObstacles[i].x -= 1.5 * gameSpeed;
+            myFlyingObstacles[i].update();
+            if (myFlyingObstacles[i].x + myFlyingObstacles[i].width < 0) {
+                myFlyingObstacles.splice(i, 1);
+            }
+        }
+
+        // Update character
+        if (keys["ArrowUp"]) {
+            myGamePiece.speedY = -1 * gameSpeed;
+        }
+        if (keys["ArrowDown"]) {
+            myGamePiece.speedY = 1 * gameSpeed;
+        }
+        if (keys["ArrowLeft"]) {
+            myGamePiece.speedX = -1 * gameSpeed;
+        }
+        if (keys["ArrowRight"]) {
+            myGamePiece.speedX = 1 * gameSpeed;
+        }
+
+        myGamePiece.newPos();
+        myGamePiece.update();
+
+        // Check collisions
+        for (var i = myObstacles.length - 1; i >= 0; i--) {
+            if (myGamePiece.crashWith(myObstacles[i])) {
+                myGameArea.stop();
+                crashSound.play().catch(function(error) {
+                    console.error("Error playing crash sound:", error);
+                });
+                return;
+            }
+        }
+
+        for (var i = myFlyingObstacles.length - 1; i >= 0; i--) {
+            if (myGamePiece.crashWith(myFlyingObstacles[i])) {
+                myGameArea.stop();
+                crashSound.play().catch(function(error) {
+                    console.error("Error playing crash sound:", error);
+                });
+                return;
+            }
+        }
+
+        // Update score
+        myScore.text = "Score: " + Math.floor(myGameArea.frameNo / 100);
+        myScore.update();
+    }
 }
 
 function everyinterval(n) {
-    return (myGameArea.frameNo / n) % 1 === 0;
+    if ((myGameArea.frameNo / n) % 1 === 0) { return true; }
+    return false;
 }
 
-function pauseGame() {
-    myGameArea.pause();
+function togglePause() {
+    if (gamePaused) {
+        myGameArea.interval = setInterval(updateGameArea, 20);
+        gamePaused = false;
+        document.getElementById("pauseButton").innerText = "Pause";
+    } else {
+        clearInterval(myGameArea.interval);
+        gamePaused = true;
+        document.getElementById("pauseButton").innerText = "Resume";
+    }
 }
+
+function resetGame() {
+    console.log("Resetting game...");
+    myObstacles = [];
+    myFlyingObstacles = [];
+    myScore.text = "Score: 0";
+    gameSpeed = 1;
+    myGameArea.frameNo = 0;
+    gameOver = false; // Ensure game over state is reset
+}
+
+window.addEventListener('load', function() {
+    console.log("Page loaded. Ready to start the game.");
+});
 
 
