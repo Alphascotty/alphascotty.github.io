@@ -16,7 +16,7 @@ function startGame() {
     canvas.style.height = '100%';
 
     // Start background music
-    backgroundMusic.play().catch(function() {
+    backgroundMusic.play().catch(function () {
         console.log('Background music can only play after user interaction');
     });
 
@@ -29,7 +29,7 @@ function startGame() {
 
 var myGameArea = {
     canvas: document.getElementById('gameCanvas'),
-    start: function() {
+    start: function () {
         this.canvas.width = 480;
         this.canvas.height = 270;
         this.context = this.canvas.getContext("2d");
@@ -38,25 +38,25 @@ var myGameArea = {
 
         // Event listeners are added only once
         if (!this.eventListenersAdded) {
-            window.addEventListener('keydown', function(e) {
+            window.addEventListener('keydown', function (e) {
                 myGameArea.keys = (myGameArea.keys || []);
-                myGameArea.keys[e.keyCode] = true;
+                myGameArea.keys[e.code] = true; // Use 'code' instead of 'keyCode'
             });
-            window.addEventListener('keyup', function(e) {
-                myGameArea.keys[e.keyCode] = false;
+            window.addEventListener('keyup', function (e) {
+                myGameArea.keys[e.code] = false; // Use 'code' instead of 'keyCode'
             });
             this.eventListenersAdded = true;
         }
     },
-    clear: function() {
+    clear: function () {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     },
-    stop: function() {
+    stop: function () {
         clearInterval(this.interval);
         backgroundMusic.pause();
         crashSound.play();
     },
-    pause: function() {
+    pause: function () {
         if (!gamePaused) {
             clearInterval(this.interval);
             backgroundMusic.pause();
@@ -83,7 +83,7 @@ function component(width, height, color, x, y, type) {
         this.image = new Image();
         this.image.src = color; // Preload image here
     }
-    this.update = function() {
+    this.update = function () {
         ctx = myGameArea.context;
         if (this.type == "text") {
             ctx.font = this.width + " " + this.height;
@@ -96,20 +96,20 @@ function component(width, height, color, x, y, type) {
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     }
-    this.newPos = function() {
+    this.newPos = function () {
         this.gravitySpeed += this.gravity;
         this.x += this.speedX;
         this.y += this.speedY + this.gravitySpeed;
         this.hitBottom();
     }
-    this.hitBottom = function() {
+    this.hitBottom = function () {
         var rockbottom = myGameArea.canvas.height - this.height;
         if (this.y > rockbottom) {
             this.y = rockbottom;
             this.gravitySpeed = 0;
         }
     }
-    this.crashWith = function(otherobj) {
+    this.crashWith = function (otherobj) {
         var myleft = this.x;
         var myright = this.x + (this.width);
         var mytop = this.y;
@@ -155,13 +155,13 @@ function updateGameArea() {
     myScore.update();
     myGamePiece.speedX = 0;
     myGamePiece.speedY = 0;
-    
+
     // Desktop controls using arrow keys
-    if (myGameArea.keys && myGameArea.keys[37]) {myGamePiece.speedX = -1;} // Left arrow
-    if (myGameArea.keys && myGameArea.keys[39]) {myGamePiece.speedX = 1;}  // Right arrow
-    if (myGameArea.keys && myGameArea.keys[38]) {myGamePiece.speedY = -1;} // Up arrow
-    if (myGameArea.keys && myGameArea.keys[40]) {myGamePiece.speedY = 1;}  // Down arrow
-    
+    if (myGameArea.keys && myGameArea.keys['ArrowLeft']) { myGamePiece.speedX = -1; } // Left arrow
+    if (myGameArea.keys && myGameArea.keys['ArrowRight']) { myGamePiece.speedX = 1; }  // Right arrow
+    if (myGameArea.keys && myGameArea.keys['ArrowUp']) { myGamePiece.speedY = -1; } // Up arrow
+    if (myGameArea.keys && myGameArea.keys['ArrowDown']) { myGamePiece.speedY = 1; }  // Down arrow
+
     // Update position
     myGamePiece.newPos();
     myGamePiece.update();
@@ -174,4 +174,5 @@ function everyinterval(n) {
 function pauseGame() {
     myGameArea.pause();
 }
+
 
