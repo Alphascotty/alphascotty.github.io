@@ -76,10 +76,10 @@ var myGameArea = {
         gameOver = true;
     },
     adjustSpeed: function () {
-        // Double the speed every time the score reaches a new 100 interval
+        // Double the speed every time the score reaches a new 10000 interval
         var score = Math.floor(this.frameNo / 100);
-        if (score > 0 && score % 2 === 0) {
-            gameSpeed = Math.pow(2, score / 2);  // Double the speed each 100 points
+        if (score > 0 && score % 100 === 0) {
+            gameSpeed = Math.pow(2, score / 10000);  // Double the speed every 10000 points
             console.log("Game speed increased to:", gameSpeed);
         }
     }
@@ -162,17 +162,23 @@ function updateGameArea() {
 
         if (myGameArea.frameNo == 1 || everyinterval(150)) {
             var x = myGameArea.canvas.width;
-            var minHeight = 20;
-            var maxHeight = 200;
+
+            // Adjusted pole height logic
+            var minHeight = 50; // Adjusted minimum height
+            var maxHeight = 150; // Adjusted maximum height
             var height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
-            var minGap = 50;
+
+            // Ensure the gap is large enough for the character to fit
+            var minGap = 50 + myGamePiece.height; // Gap to fit character height + some margin
             var maxGap = 200;
             var gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
 
+            // Add obstacles (poles)
             myObstacles.push(new gameObject(10, height, "./Media/pole.png", x, 0, "image"));
             myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, "./Media/pole.png", x, height + gap, "image"));
         }
 
+        // Move obstacles and check for removal
         for (var i = myObstacles.length - 1; i >= 0; i--) {
             myObstacles[i].x -= 1 * gameSpeed;
             myObstacles[i].update();
@@ -181,6 +187,7 @@ function updateGameArea() {
             }
         }
 
+        // Handle player movement
         myGamePiece.speedX = 0;
         myGamePiece.speedY = 0;
         if (keys["ArrowUp"]) myGamePiece.speedY = -1 * gameSpeed;
@@ -191,16 +198,21 @@ function updateGameArea() {
         myGamePiece.newPos();
         myGamePiece.update();
 
+        // Collision detection and playing the crash sound
         for (var i = myObstacles.length - 1; i >= 0; i--) {
             if (myGamePiece.crashWith(myObstacles[i])) {
-                myGameArea.stop();
+                // Play crash sound immediately on collision
                 crashSound.play().catch(function (error) {
                     console.error("Error playing crash sound:", error);
                 });
+
+                // Stop the game after the sound is triggered
+                myGameArea.stop();
                 return;
             }
         }
 
+        // Update the score
         myScore.text = "Score: " + Math.floor(myGameArea.frameNo / 100);
         myScore.update();
     }
@@ -215,10 +227,16 @@ function togglePause() {
         myGameArea.interval = setInterval(updateGameArea, 20);
         gamePaused = false;
         document.getElementById("pauseButton").innerText = "Pause";
+        // Resume background music
+        backgroundMusic.play().catch(function (error) {
+            console.error("Error resuming background music:", error);
+        });
     } else {
         clearInterval(myGameArea.interval);
         gamePaused = true;
         document.getElementById("pauseButton").innerText = "Resume";
+        // Pause background music
+        backgroundMusic.pause();
     }
 }
 
@@ -226,14 +244,8 @@ function resetGame() {
     console.log("Resetting game...");
     clearInterval(myGameArea.interval);
     myObstacles = [];
-    myScore.text = "Score: 0";
-    gameSpeed = 1;
     myGameArea.frameNo = 0;
-    gameOver = false;
+    gameSpeed = 1;
 }
-
-window.addEventListener('load', function () {
-    console.log("Page loaded. Ready to start the game.");
-});
 
 
