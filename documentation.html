@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <title>Documentation</title>
+</head>
+<body>
+
+ <ul></ul> <h1> Below are the issues I encountered and how I solved them:</h1>
+  <li> 
+Poles Getting More Spaced Out After 10<br />
+Issue: Obstacles seemed to be spaced further apart after a certain point in the game.<br />
+Fix:
+Obstacle Spacing Adjustment: Added a fixed spacing interval (150 pixels) between sets of obstacles to maintain consistent spacing regardless of game speed.
+  </li>
+    
+<li>
+  Crash Sound Played After Game Over Alert<br />
+Issue: The crash sound was played only after the game-over alert was shown, which was not the desired behavior.<br />
+Fix:
+Timing Adjustment: Used setTimeout to delay the game-over alert by 500 milliseconds, allowing the crash sound to play completely before the game-over alert appears.
+</li>
+
+  <li>
+ Game Speed Increase Frequency Issue<br />
+Issue: The game speed increase was set to occur every 10000 units, which was too infrequent.<br />
+Fix:
+Adjusted Speed Increase: Changed the frequency of speed increase to every 1000 units by modifying the speed increase logic to reflect every 10 score points (since 100 frames per point).
+  </li>
+
+  <li>
+4. Background Music Pause and Resume Functionality<br />
+Issue: Background music needed to pause and resume correctly with the pause button.<br />
+Fix:
+Pause and Resume: Implemented togglePause() function to pause and resume the game and background music. The background music is paused when the game is paused and resumed when the game continues.
+  </li>
+
+  <li>
+ Adjusting the Character Fit with Obstacles<br />
+Issue: The gap between poles was not large enough to ensure the character could fit through.<br />
+Fix:
+Obstacle Gap Adjustment: Modified the gap between obstacles to be at least 50 + myGamePiece.height to ensure the character fits through comfortably.
+  </li>
+
+  <li>
+Crash Sound Timing During Collision<br />
+Issue: Crash sound was not playing immediately upon collision. <br />
+Fix:
+Immediate Crash Sound Play: Ensured the crash sound is played immediately when a collision is detected, before stopping the game.
+  </li>
+</ul>
+
+</body>
+</html>
