@@ -4,18 +4,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Game</title>
 </head>
-<body onload="startGame()">
+<body>
     <audio id="backgroundMusic" src="./Media/backgroundMusic.mp3" loop></audio> <!-- Background music path -->
     <audio id="crashSound" src="./Media/crash.mp3"></audio> <!-- Crash music path -->
 
     <canvas id="gameCanvas"></canvas>
 
     <!-- Buttons for Start, Pause/Continue -->
-    <button onclick="startGame()">START GAME</button>
-    <button onclick="pauseGame()">PAUSE/CONTINUE</button>
+    <button id="startButton">START GAME</button>
+    <button id="pauseButton">PAUSE</button>
 
     <p>How long can you survive?</p>
 
-    <script src="game.js"></script>
+    <script src="server.js"></script>
 </body>
 </html>
