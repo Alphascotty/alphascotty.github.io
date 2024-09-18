@@ -6,19 +6,18 @@ var gamePaused = false;
 var gameSpeed = 1;
 var backgroundImage;
 var crashSound = new Audio();
-var gameOver = false; // New variable to track if the game is over
+var gameOver = false;
 
-// Initialize audio objects with error handling
+// Initialize audio objects
 var backgroundMusic = new Audio("./Media/backgroundMusic.mp3");
 backgroundMusic.loop = true;
 backgroundMusic.muted = false;
-
 crashSound.src = "./Media/crash.mp3";
 
 // Add event listeners for buttons
 document.getElementById("startButton").addEventListener("click", function () {
     if (gameOver) {
-        resetGame(); // Reset game if it's over
+        resetGame();
     }
     startGame();
     backgroundMusic.play().catch(function (error) {
@@ -32,18 +31,14 @@ function startGame() {
     console.log("Game starting...");
     gameOver = false;
 
-    // Initialize game piece (character image)
     myGamePiece = new gameObject(30, 30, "./Media/character.png", 10, 120, "image");
 
-    // Initialize score display (Score retains from previous runs unless resetGame is called)
     if (!myScore) {
         myScore = new gameObject("30px", "Consolas", "black", 280, 40, "text");
     }
 
-    // Start game area
     myGameArea.start();
 
-    // Add event listeners for keydown and keyup
     window.addEventListener('keydown', function (e) {
         keys[e.key] = true;
     });
@@ -56,27 +51,20 @@ function startGame() {
 var myGameArea = {
     canvas: document.createElement("canvas"),
     start: function () {
-        console.log("Game area started...");
-
         this.canvas.width = 500;
         this.canvas.height = 400;
         this.context = this.canvas.getContext("2d");
 
-        // Load background image with error handling
         backgroundImage = new Image();
         backgroundImage.src = "./Media/background.jpg";
-        backgroundImage.onload = () => {
-            console.log("Background image loaded...");
-        };
+        backgroundImage.onload = () => console.log("Background image loaded.");
         backgroundImage.onerror = function () {
             console.error("Error loading background image.");
         };
 
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
-        console.log("Canvas added to DOM.");
-
-        this.frameNo = this.frameNo || 0; // Do not reset frame number unless resetGame is called
-        this.interval = setInterval(updateGameArea, 20); // Game loop
+        this.frameNo = this.frameNo || 0;
+        this.interval = setInterval(updateGameArea, 20);
     },
     clear: function () {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -87,7 +75,6 @@ var myGameArea = {
         gameOver = true;
     },
     adjustSpeed: function () {
-        // Increase game speed every 3000 frames
         if (this.frameNo > 3000 && this.frameNo % 3000 === 0) {
             gameSpeed += 0.5;
             console.log("Game speed increased to:", gameSpeed);
@@ -107,8 +94,6 @@ function gameObject(width, height, colorOrImage, x, y, type) {
     if (type === "image") {
         this.image = new Image();
         this.image.src = colorOrImage;
-
-        // Ensure image is ready before drawing
         this.imageReady = false;
         this.image.onload = function () {
             this.imageReady = true;
@@ -129,7 +114,7 @@ function gameObject(width, height, colorOrImage, x, y, type) {
             ctx.fillText(this.text, this.x, this.y);
         } else if (this.type === "image" && this.imageReady) {
             ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
-        } else if (this.type !== "image") {
+        } else {
             ctx.fillStyle = colorOrImage;
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
@@ -142,18 +127,10 @@ function gameObject(width, height, colorOrImage, x, y, type) {
     }
 
     this.hitEdges = function () {
-        if (this.x < 0) {
-            this.x = 0;
-        }
-        if (this.x > myGameArea.canvas.width - this.width) {
-            this.x = myGameArea.canvas.width - this.width;
-        }
-        if (this.y < 0) {
-            this.y = 0;
-        }
-        if (this.y > myGameArea.canvas.height - this.height) {
-            this.y = myGameArea.canvas.height - this.height;
-        }
+        if (this.x < 0) this.x = 0;
+        if (this.x > myGameArea.canvas.width - this.width) this.x = myGameArea.canvas.width - this.width;
+        if (this.y < 0) this.y = 0;
+        if (this.y > myGameArea.canvas.height - this.height) this.y = myGameArea.canvas.height - this.height;
     }
 
     this.crashWith = function (otherobj) {
@@ -165,41 +142,32 @@ function gameObject(width, height, colorOrImage, x, y, type) {
         var otherright = otherobj.x + otherobj.width;
         var othertop = otherobj.y;
         var otherbottom = otherobj.y + otherobj.height;
-        var crash = true;
-        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
-            crash = false;
-        }
-        return crash;
+        return !(mybottom < othertop || mytop > otherbottom || myright < otherleft || myleft > otherright);
     }
 }
 
 function updateGameArea() {
     if (!gamePaused && !gameOver) {
-        var x, height, gap, minHeight, maxHeight, minGap, maxGap;
-
         myGameArea.clear();
 
-        // Draw the background image
         if (backgroundImage) {
             myGameArea.context.drawImage(backgroundImage, 0, 0, myGameArea.canvas.width, myGameArea.canvas.height);
         }
 
         myGameArea.frameNo += 1;
-
         myGameArea.adjustSpeed();
 
-        // Create new obstacles
         if (myGameArea.frameNo == 1 || everyinterval(150)) {
-            x = myGameArea.canvas.width;
-            minHeight = 20;
-            maxHeight = 200;
-            height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
-            minGap = 50;
-            maxGap = 200;
-            gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
+            var x = myGameArea.canvas.width;
+            var minHeight = 20;
+            var maxHeight = 200;
+            var height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
+            var minGap = 50;
+            var maxGap = 200;
+            var gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
 
-            myObstacles.push(new gameObject(10, height, "./Media/pole.png", x, 0, "image")); // Top pole
-            myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, "./Media/pole.png", x, height + gap, "image")); // Bottom pole
+            myObstacles.push(new gameObject(10, height, "./Media/pole.png", x, 0, "image"));
+            myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, "./Media/pole.png", x, height + gap, "image"));
         }
 
         for (var i = myObstacles.length - 1; i >= 0; i--) {
@@ -210,26 +178,16 @@ function updateGameArea() {
             }
         }
 
-        // Update character
         myGamePiece.speedX = 0;
         myGamePiece.speedY = 0;
-        if (keys["ArrowUp"]) {
-            myGamePiece.speedY = -1 * gameSpeed;
-        }
-        if (keys["ArrowDown"]) {
-            myGamePiece.speedY = 1 * gameSpeed;
-        }
-        if (keys["ArrowLeft"]) {
-            myGamePiece.speedX = -1 * gameSpeed;
-        }
-        if (keys["ArrowRight"]) {
-            myGamePiece.speedX = 1 * gameSpeed;
-        }
+        if (keys["ArrowUp"]) myGamePiece.speedY = -1 * gameSpeed;
+        if (keys["ArrowDown"]) myGamePiece.speedY = 1 * gameSpeed;
+        if (keys["ArrowLeft"]) myGamePiece.speedX = -1 * gameSpeed;
+        if (keys["ArrowRight"]) myGamePiece.speedX = 1 * gameSpeed;
 
         myGamePiece.newPos();
         myGamePiece.update();
 
-        // Check collisions
         for (var i = myObstacles.length - 1; i >= 0; i--) {
             if (myGamePiece.crashWith(myObstacles[i])) {
                 myGameArea.stop();
@@ -240,15 +198,13 @@ function updateGameArea() {
             }
         }
 
-        // Update score
         myScore.text = "Score: " + Math.floor(myGameArea.frameNo / 100);
         myScore.update();
     }
 }
 
 function everyinterval(n) {
-    if ((myGameArea.frameNo / n) % 1 === 0) { return true; }
-    return false;
+    return (myGameArea.frameNo / n) % 1 === 0;
 }
 
 function togglePause() {
@@ -265,14 +221,15 @@ function togglePause() {
 
 function resetGame() {
     console.log("Resetting game...");
-    clearInterval(myGameArea.interval); // Clear the existing interval
+    clearInterval(myGameArea.interval);
     myObstacles = [];
     myScore.text = "Score: 0";
     gameSpeed = 1;
     myGameArea.frameNo = 0;
-    gameOver = false; // Ensure game over state is reset
+    gameOver = false;
 }
 
 window.addEventListener('load', function () {
     console.log("Page loaded. Ready to start the game.");
 });
+
