@@ -1,20 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game with Graphics</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Game</title>
 </head>
-<body>
+<body onload="startGame()">
+    <audio id="backgroundMusic" src="backgroundMusic.mp3" loop></audio> <!-- Background music path -->
+    <audio id="crashSound" src="crash.mp3"></audio> <!-- Crash music path -->
 
+    <canvas id="gameCanvas"></canvas>
 
-<p></p>
-<button id="startButton">Start Game</button><p></p>
-<button id="pauseButton">Pause Game</button><p></p>
-<button id="resetButton">Restart</button><p></p>
+    <!-- Buttons for Start, Pause/Continue -->
+    <button onclick="startGame()">START GAME</button>
+    <button onclick="pauseGame()">PAUSE/CONTINUE</button>
 
-<!-- Link to external JavaScript file -->
-<script src="game.js"></script>
+    <p>How long can you survive?</p>
 
+    <script src="script.js"></script>
 </body>
 </html>
