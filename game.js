@@ -52,7 +52,7 @@ function startGame() {
     gameOver = false;
 
     // Initialize game piece (character image)
-    myGamePiece = new gameObject(30, 30, "./Media/character.png", 10, 120, "image");
+    myGamePiece = new gameObject(30, 30, "./Media/char.gif", 10, 120, "image");
 
     // Initialize score display (Score retains from previous runs unless resetGame is called)
     if (!myScore) {
