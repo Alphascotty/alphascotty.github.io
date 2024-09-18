@@ -31,7 +31,7 @@ function startGame() {
     console.log("Game starting...");
     gameOver = false;
 
-    // Increase game piece size by 10
+    // Initialize game piece
     myGamePiece = new gameObject(40, 40, "./Media/character.png", 10, 120, "image");
 
     if (!myScore) {
@@ -72,14 +72,17 @@ var myGameArea = {
     },
     stop: function () {
         clearInterval(this.interval);
-        alert("Game Over! Your Score: " + Math.floor(this.frameNo / 100));
-        gameOver = true;
+        // Ensure crash sound is played before the game-over alert
+        setTimeout(function () {
+            alert("Game Over! Your Score: " + Math.floor(myGameArea.frameNo / 100));
+            gameOver = true;
+        }, 500); // Delay to allow the crash sound to play before the alert
     },
     adjustSpeed: function () {
-        // Double the speed every time the score reaches a new 10000 interval
+        // Increase speed every 1000 units
         var score = Math.floor(this.frameNo / 100);
-        if (score > 0 && score % 100 === 0) {
-            gameSpeed = Math.pow(2, score / 10000);  // Double the speed every 10000 points
+        if (score > 0 && score % 10 === 0) {  // 1000 units -> 10 (since 100 frames per point)
+            gameSpeed = Math.pow(2, score / 10);  // Increase speed for every 1000 points
             console.log("Game speed increased to:", gameSpeed);
         }
     }
@@ -206,7 +209,7 @@ function updateGameArea() {
                     console.error("Error playing crash sound:", error);
                 });
 
-                // Stop the game after the sound is triggered
+                // Stop the game and play sound before the game-over alert
                 myGameArea.stop();
                 return;
             }
@@ -247,5 +250,3 @@ function resetGame() {
     myGameArea.frameNo = 0;
     gameSpeed = 1;
 }
-
-
