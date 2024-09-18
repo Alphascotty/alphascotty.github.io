@@ -163,7 +163,7 @@ function updateGameArea() {
         myGameArea.frameNo += 1;
         myGameArea.adjustSpeed();
 
-        if (myGameArea.frameNo == 1 || everyinterval(150)) {
+        if (myGameArea.frameNo == 1 || everyinterval(150 / gameSpeed)) {
             var x = myGameArea.canvas.width;
 
             // Adjusted pole height logic
