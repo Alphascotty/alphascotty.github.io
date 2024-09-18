@@ -176,9 +176,12 @@ function updateGameArea() {
             var maxGap = 200;
             var gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
 
-            // Add obstacles (poles)
-            myObstacles.push(new gameObject(10, height, "./Media/pole.png", x, 0, "image"));
-            myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, "./Media/pole.png", x, height + gap, "image"));
+            // Add obstacles (poles) consistently spaced
+            var spacing = 150; // Fixed spacing between sets of obstacles
+            if (myObstacles.length === 0 || myObstacles[myObstacles.length - 1].x < myGameArea.canvas.width - spacing) {
+                myObstacles.push(new gameObject(10, height, "./Media/pole.png", x, 0, "image"));
+                myObstacles.push(new gameObject(10, myGameArea.canvas.height - height - gap, "./Media/pole.png", x, height + gap, "image"));
+            }
         }
 
         // Move obstacles and check for removal
@@ -209,7 +212,7 @@ function updateGameArea() {
                     console.error("Error playing crash sound:", error);
                 });
 
-                // Stop the game and play sound before the game-over alert
+                // Stop the game after the sound is triggered
                 myGameArea.stop();
                 return;
             }
@@ -250,3 +253,4 @@ function resetGame() {
     myGameArea.frameNo = 0;
     gameSpeed = 1;
 }
+
