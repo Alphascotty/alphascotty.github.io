@@ -4,20 +4,22 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chessboard with Special Rules</title>
+  <title>Chessboard with Piece Images</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js" crossorigin></script>
   <style>
+    /* Center the container div */
     body {
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       margin: 0;
-      background-color: #f8f9fa;
+      background-color: #f8f9fa; /* Optional background color */
     }
 
+    /* Make the board and comments container centered */
     #game-container {
       display: flex;
       flex-direction: column;
@@ -25,6 +27,7 @@
       text-align: center;
     }
 
+    /* Optional: Add some margin for the text */
     h2 {
       margin-top: 20px;
     }
@@ -34,6 +37,7 @@
   <div id="root"></div>
 
   <script type="text/babel" data-presets="react,stage-3">
+    // Model: Starting state of the chessboard in 2D array
     const initialGameState = [
       ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
       ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
@@ -63,42 +67,66 @@
     function Game() {
       const [game, setGame] = React.useState(initialGameState);
       const [selectedSquare, setSelectedSquare] = React.useState(null);
-      const [isWhiteTurn, setIsWhiteTurn] = React.useState(true);
-      const [gameStatus, setGameStatus] = React.useState('');
-      const [promotingPawn, setPromotingPawn] = React.useState(null);
+      const [isWhiteTurn, setIsWhiteTurn] = React.useState(true); 
+      const [gameOver, setGameOver] = React.useState(false);
+      const [result, setResult] = React.useState('');
 
-      function checkStalemate() {
-        // Implement stalemate detection logic here
-        // Check if the current player has any legal moves left without being in check
-        // If none, set gameStatus to "Stalemate - Draw"
-        if (!hasAnyLegalMoves()) {
-          setGameStatus("Stalemate - Draw");
+      // Check if a move is valid
+      function isValidMove(piece, startRow, startCol, endRow, endCol) {
+        const dx = endRow - startRow;
+        const dy = endCol - startCol;
+        const absDx = Math.abs(dx);
+        const absDy = Math.abs(dy);
+
+        switch (piece.toLowerCase()) {
+          case 'p': 
+            if (piece === 'P') {
+              if (dy === 0 && dx === -1 && !game[endRow][endCol]) return true;
+              if (startRow === 6 && dy === 0 && dx === -2 && !game[endRow][endCol] && !game[endRow + 1][endCol]) return true;
+              if (absDy === 1 && dx === -1 && game[endRow][endCol] && game[endRow][endCol].toLowerCase() !== piece.toLowerCase()) return true;
+            } else if (piece === 'p') {
+              if (dy === 0 && dx === 1 && !game[endRow][endCol]) return true;
+              if (startRow === 1 && dy === 0 && dx === 2 && !game[endRow][endCol] && !game[endRow - 1][endCol]) return true;
+              if (absDy === 1 && dx === 1 && game[endRow][endCol] && game[endRow][endCol].toLowerCase() !== piece.toLowerCase()) return true;
+            }
+            break;
+          case 'r':
+            if ((dx === 0 || dy === 0) && clearPath(startRow, startCol, endRow, endCol)) return true;
+            break;
+          case 'n':
+            if (absDx === 2 && absDy === 1 || absDx === 1 && absDy === 2) return true;
+            break;
+          case 'b':
+            if (absDx === absDy && clearPath(startRow, startCol, endRow, endCol)) return true;
+            break;
+          case 'q':
+            if ((dx === 0 || dy === 0 || absDx === absDy) && clearPath(startRow, startCol, endRow, endCol)) return true;
+            break;
+          case 'k':
+            if (absDx <= 1 && absDy <= 1) return true;
+            break;
+          default:
+            return false;
         }
+        return false;
       }
 
-      function checkDeadPosition() {
-        // Implement dead position detection logic here
-        // E.g., only kings remain or king vs. king + bishop/knight
-        // If detected, set gameStatus to "Draw by Dead Position"
-      }
+      function clearPath(startRow, startCol, endRow, endCol) {
+        const stepRow = endRow > startRow ? 1 : endRow < startRow ? -1 : 0;
+        const stepCol = endCol > startCol ? 1 : endCol < startCol ? -1 : 0;
+        let currentRow = startRow + stepRow;
+        let currentCol = startCol + stepCol;
 
-      function hasAnyLegalMoves() {
-        // Implement logic to check if the current player has any legal moves left
-        return true; // This should be implemented properly
-      }
-
-      function handlePawnPromotion(row, col) {
-        const promotionPiece = isWhiteTurn ? 'Q' : 'q';
-        const newGame = game.map((r) => r.slice());
-        newGame[row][col] = promotionPiece;
-        setGame(newGame);
-        setPromotingPawn(null);
+        while (currentRow !== endRow || currentCol !== endCol) {
+          if (game[currentRow][currentCol]) return false;
+          currentRow += stepRow;
+          currentCol += stepCol;
+        }
+        return true;
       }
 
       function handleClick(row, col) {
-        if (promotingPawn) {
-          return;
-        }
+        if (gameOver) return;
 
         const piece = game[row][col];
 
@@ -106,23 +134,28 @@
           const [selectedRow, selectedCol] = selectedSquare;
           const selectedPiece = game[selectedRow][selectedCol];
 
-          if (isValidMove(selectedPiece, selectedRow, selectedCol, row, col) &&
+          if (isValidMove(selectedPiece, selectedRow, selectedCol, row, col) && 
               (isWhiteTurn ? selectedPiece === selectedPiece.toUpperCase() : selectedPiece === selectedPiece.toLowerCase())) {
             const newGame = game.map(row => row.slice());
             newGame[row][col] = selectedPiece;
             newGame[selectedRow][selectedCol] = '';
-            
-            // Pawn Promotion Logic
-            if (selectedPiece.toLowerCase() === 'p' && (row === 0 || row === 7)) {
-              setPromotingPawn({ row, col });
-              return;
-            }
-
             setGame(newGame);
             setSelectedSquare(null);
             setIsWhiteTurn(!isWhiteTurn);
-            checkStalemate();
-            checkDeadPosition();
+
+            // Check for pawn promotion
+            if (selectedPiece.toLowerCase() === 'p' && (row === 0 || row === 7)) {
+              newGame[row][col] = isWhiteTurn ? 'Q' : 'q'; // Promote to queen
+            }
+
+            // Check for game over conditions
+            if (isStalemate(newGame)) {
+              setGameOver(true);
+              setResult('Stalemate');
+            } else if (isDeadPosition(newGame)) {
+              setGameOver(true);
+              setResult('Dead Position');
+            }
           } else {
             setSelectedSquare(null);
           }
@@ -133,27 +166,28 @@
         }
       }
 
-      function handleDrawByAgreement() {
-        setGameStatus("Draw by Mutual Agreement");
+      function isStalemate(game) {
+        // Implement stalemate logic
+        // For simplicity, this example does not include full stalemate detection
+        return false;
+      }
+
+      function isDeadPosition(game) {
+        // Implement dead position logic
+        // For simplicity, this example does not include full dead position detection
+        return false;
+      }
+
+      function handleMutualAgreement() {
+        setGameOver(true);
+        setResult('Draw by Mutual Agreement');
       }
 
       return (
         <div id="game-container">
           <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
-          <h2>{gameStatus ? gameStatus : isWhiteTurn ? "White's Turn" : "Black's Turn"}</h2>
-          {promotingPawn && (
-            <div>
-              <h3>Choose promotion piece:</h3>
-              {['Q', 'R', 'B', 'N'].map((piece) => (
-                <button key={piece} onClick={() => handlePawnPromotion(promotingPawn.row, promotingPawn.col, piece)}>
-                  {isWhiteTurn ? piece : piece.toLowerCase()}
-                </button>
-              ))}
-            </div>
-          )}
-          {!gameStatus && (
-            <button onClick={handleDrawByAgreement}>Draw by Agreement</button>
-          )}
+          <h2>{gameOver ? result : (isWhiteTurn ? "White's Turn" : "Black's Turn")}</h2>
+          <button onClick={handleMutualAgreement} disabled={gameOver}>Mutual Agreement</button>
         </div>
       );
     }
@@ -209,6 +243,8 @@
   </script>
 </body>
 </html>
+
+
 
 
 
