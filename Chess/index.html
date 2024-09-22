@@ -70,6 +70,7 @@
       const [isWhiteTurn, setIsWhiteTurn] = React.useState(true); 
       const [gameOver, setGameOver] = React.useState(false);
       const [result, setResult] = React.useState('');
+      const [promotionSquare, setPromotionSquare] = React.useState(null);
 
       // Check if a move is valid
       function isValidMove(piece, startRow, startCol, endRow, endCol) {
@@ -77,6 +78,10 @@
         const dy = endCol - startCol;
         const absDx = Math.abs(dx);
         const absDy = Math.abs(dy);
+
+        if (game[endRow][endCol] && game[endRow][endCol].toLowerCase() === piece.toLowerCase()) {
+          return false; // Can't capture own piece
+        }
 
         switch (piece.toLowerCase()) {
           case 'p': 
@@ -145,11 +150,14 @@
 
             // Check for pawn promotion
             if (selectedPiece.toLowerCase() === 'p' && (row === 0 || row === 7)) {
-              newGame[row][col] = isWhiteTurn ? 'Q' : 'q'; // Promote to queen
+              setPromotionSquare([row, col]);
             }
 
             // Check for game over conditions
-            if (isStalemate(newGame)) {
+            if (isCheckmate(newGame, !isWhiteTurn)) {
+              setGameOver(true);
+              setResult(isWhiteTurn ? 'White Wins' : 'Black Wins');
+            } else if (isStalemate(newGame, !isWhiteTurn)) {
               setGameOver(true);
               setResult('Stalemate');
             } else if (isDeadPosition(newGame)) {
@@ -166,7 +174,13 @@
         }
       }
 
-      function isStalemate(game) {
+      function isCheckmate(game, isWhiteTurn) {
+        // Implement checkmate logic
+        // For simplicity, this example does not include full checkmate detection
+        return false;
+      }
+
+      function isStalemate(game, isWhiteTurn) {
         // Implement stalemate logic
         // For simplicity, this example does not include full stalemate detection
         return false;
@@ -183,11 +197,27 @@
         setResult('Draw by Mutual Agreement');
       }
 
+      function handlePromotion(piece) {
+        const [row, col] = promotionSquare;
+        const newGame = game.map(row => row.slice());
+        newGame[row][col] = piece;
+        setGame(newGame);
+        setPromotionSquare(null);
+      }
+
       return (
         <div id="game-container">
           <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
           <h2>{gameOver ? result : (isWhiteTurn ? "White's Turn" : "Black's Turn")}</h2>
           <button onClick={handleMutualAgreement} disabled={gameOver}>Mutual Agreement</button>
+          {promotionSquare && (
+            <div>
+              <h3>Choose Promotion</h3>
+              <button onClick={() => handlePromotion(isWhiteTurn ? 'Q' : 'q')}>Queen</button>
+              <button onClick={() => handlePromotion(isWhiteTurn ? 'R' : 'r')}>Rook</button>
+              <button onClick={() => handlePromotion(isWhiteTurn ? 'N' : 'n')}>Knight</button>
+            </div>
+          )}
         </div>
       );
     }
@@ -243,6 +273,7 @@
   </script>
 </body>
 </html>
+
 
 
 
