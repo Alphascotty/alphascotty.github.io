@@ -8,6 +8,30 @@
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone@7.10.3/babel.min.js" crossorigin></script>
+  <style>
+    /* Center the container div */
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f8f9fa; /* Optional background color */
+    }
+
+    /* Make the board and comments container centered */
+    #game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    /* Optional: Add some margin for the text */
+    h2 {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
   <div id="root"></div>
@@ -25,7 +49,6 @@
       ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
     ];
 
-    // Mapping of chess pieces to their respective image URLs
     const pieceImages = {
       'r': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
       'n': 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
@@ -44,7 +67,7 @@
     function Game() {
       const [game, setGame] = React.useState(initialGameState);
       const [selectedSquare, setSelectedSquare] = React.useState(null);
-      const [isWhiteTurn, setIsWhiteTurn] = React.useState(true); // Track which player's turn it is
+      const [isWhiteTurn, setIsWhiteTurn] = React.useState(true); 
 
       // Check if a move is valid
       function isValidMove(piece, startRow, startCol, endRow, endCol) {
@@ -54,30 +77,30 @@
         const absDy = Math.abs(dy);
 
         switch (piece.toLowerCase()) {
-          case 'p': // Pawn
+          case 'p': 
             if (piece === 'P') {
-              if (dy === 0 && dx === -1 && !game[endRow][endCol]) return true; // Move forward
-              if (startRow === 6 && dy === 0 && dx === -2 && !game[endRow][endCol] && !game[endRow + 1][endCol]) return true; // Double move
-              if (absDy === 1 && dx === -1 && game[endRow][endCol] && game[endRow][endCol].toLowerCase() !== piece.toLowerCase()) return true; // Capture
+              if (dy === 0 && dx === -1 && !game[endRow][endCol]) return true;
+              if (startRow === 6 && dy === 0 && dx === -2 && !game[endRow][endCol] && !game[endRow + 1][endCol]) return true;
+              if (absDy === 1 && dx === -1 && game[endRow][endCol] && game[endRow][endCol].toLowerCase() !== piece.toLowerCase()) return true;
             } else if (piece === 'p') {
-              if (dy === 0 && dx === 1 && !game[endRow][endCol]) return true; // Move forward
-              if (startRow === 1 && dy === 0 && dx === 2 && !game[endRow][endCol] && !game[endRow - 1][endCol]) return true; // Double move
-              if (absDy === 1 && dx === 1 && game[endRow][endCol] && game[endRow][endCol].toLowerCase() !== piece.toLowerCase()) return true; // Capture
+              if (dy === 0 && dx === 1 && !game[endRow][endCol]) return true;
+              if (startRow === 1 && dy === 0 && dx === 2 && !game[endRow][endCol] && !game[endRow - 1][endCol]) return true;
+              if (absDy === 1 && dx === 1 && game[endRow][endCol] && game[endRow][endCol].toLowerCase() !== piece.toLowerCase()) return true;
             }
             break;
-          case 'r': // Rook
+          case 'r':
             if ((dx === 0 || dy === 0) && clearPath(startRow, startCol, endRow, endCol)) return true;
             break;
-          case 'n': // Knight
+          case 'n':
             if (absDx === 2 && absDy === 1 || absDx === 1 && absDy === 2) return true;
             break;
-          case 'b': // Bishop
+          case 'b':
             if (absDx === absDy && clearPath(startRow, startCol, endRow, endCol)) return true;
             break;
-          case 'q': // Queen
+          case 'q':
             if ((dx === 0 || dy === 0 || absDx === absDy) && clearPath(startRow, startCol, endRow, endCol)) return true;
             break;
-          case 'k': // King
+          case 'k':
             if (absDx <= 1 && absDy <= 1) return true;
             break;
           default:
@@ -86,11 +109,9 @@
         return false;
       }
 
-      // Check if there are no pieces blocking the path (rook, bishop, queen)
       function clearPath(startRow, startCol, endRow, endCol) {
         const stepRow = endRow > startRow ? 1 : endRow < startRow ? -1 : 0;
         const stepCol = endCol > startCol ? 1 : endCol < startCol ? -1 : 0;
-
         let currentRow = startRow + stepRow;
         let currentCol = startCol + stepCol;
 
@@ -102,7 +123,6 @@
         return true;
       }
 
-      // Handle square click for moving pieces
       function handleClick(row, col) {
         const piece = game[row][col];
 
@@ -110,7 +130,6 @@
           const [selectedRow, selectedCol] = selectedSquare;
           const selectedPiece = game[selectedRow][selectedCol];
 
-          // Check if move is valid and the piece belongs to the current player
           if (isValidMove(selectedPiece, selectedRow, selectedCol, row, col) && 
               (isWhiteTurn ? selectedPiece === selectedPiece.toUpperCase() : selectedPiece === selectedPiece.toLowerCase())) {
             const newGame = game.map(row => row.slice());
@@ -118,12 +137,11 @@
             newGame[selectedRow][selectedCol] = '';
             setGame(newGame);
             setSelectedSquare(null);
-            setIsWhiteTurn(!isWhiteTurn); // Toggle turn
+            setIsWhiteTurn(!isWhiteTurn);
           } else {
-            setSelectedSquare(null); // Deselect if move is invalid
+            setSelectedSquare(null);
           }
         } else {
-          // Select a piece if it's the current player's turn
           if (piece && ((isWhiteTurn && piece === piece.toUpperCase()) || (!isWhiteTurn && piece === piece.toLowerCase()))) {
             setSelectedSquare([row, col]);
           }
@@ -131,14 +149,13 @@
       }
 
       return (
-        <div>
+        <div id="game-container">
           <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
           <h2>{isWhiteTurn ? "White's Turn" : "Black's Turn"}</h2>
         </div>
       );
     }
 
-    // View: Board and buttons reflecting the game state
     function Board({ game, onSquareClick, selectedSquare }) {
       return (
         <div>
@@ -171,7 +188,6 @@
         border: '1px solid #999'
       };
 
-      // Display the piece image or an empty square
       const pieceDisplay = () => {
         if (value) {
           return <img src={pieceImages[value]} alt={value} style={{ width: '70px', height: '70px' }} />;
@@ -191,4 +207,5 @@
   </script>
 </body>
 </html>
+
 
