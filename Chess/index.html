@@ -142,28 +142,22 @@
           if (isValidMove(selectedPiece, selectedRow, selectedCol, row, col) && 
               (isWhiteTurn ? selectedPiece === selectedPiece.toUpperCase() : selectedPiece === selectedPiece.toLowerCase())) {
             const newGame = game.map(row => row.slice());
-            newGame[row][col] = selectedPiece;
-            newGame[selectedRow][selectedCol] = '';
-            setGame(newGame);
-            setSelectedSquare(null);
-            setIsWhiteTurn(!isWhiteTurn);
+            if (newGame[row][col].toLowerCase() === 'k') {
+              setGameOver(true);
+              setResult(isWhiteTurn ? 'White Wins' : 'Black Wins');
+            } else {
+              newGame[row][col] = selectedPiece;
+              newGame[selectedRow][selectedCol] = '';
+              setGame(newGame);
+              setSelectedSquare(null);
+              setIsWhiteTurn(!isWhiteTurn);
+            }
 
             // Check for pawn promotion
             if (selectedPiece.toLowerCase() === 'p' && (row === 0 || row === 7)) {
               setPromotionSquare([row, col]);
             }
 
-            // Check for game over conditions
-            if (isCheckmate(newGame, !isWhiteTurn)) {
-              setGameOver(true);
-              setResult(isWhiteTurn ? 'White Wins' : 'Black Wins');
-            } else if (isStalemate(newGame, !isWhiteTurn)) {
-              setGameOver(true);
-              setResult('Stalemate');
-            } else if (isDeadPosition(newGame)) {
-              setGameOver(true);
-              setResult('Dead Position');
-            }
           } else {
             setSelectedSquare(null);
           }
