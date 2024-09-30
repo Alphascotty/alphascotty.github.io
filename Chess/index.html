@@ -159,7 +159,7 @@
             const newGame = game.map(row => row.slice());
             if (newGame[row][col].toLowerCase() === 'k') {
               setGameOver(true);
-              setResult(isWhiteTurn ? 'GAME OVER White Wins' : 'GAME OVER Black Wins');
+              setResult(isWhiteTurn ? 'GAME OVER WHITE WINS' : 'GAME OVER BLACK WINS');
             } else {
               newGame[row][col] = selectedPiece;
               newGame[selectedRow][selectedCol] = '';
