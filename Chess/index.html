@@ -73,48 +73,51 @@
       const [promotionSquare, setPromotionSquare] = React.useState(null);
 
       // Check if a move is valid
-      function isValidMove(piece, startRow, startCol, endRow, endCol) {
-        const dx = endRow - startRow;
-        const dy = endCol - startCol;
-        const absDx = Math.abs(dx);
-        const absDy = Math.abs(dy);
+function isValidMove(piece, startRow, startCol, endRow, endCol) {
+  const dx = endRow - startRow;
+  const dy = endCol - startCol;
+  const absDx = Math.abs(dx);
+  const absDy = Math.abs(dy);
 
-        if (game[endRow][endCol] && game[endRow][endCol].toLowerCase() === piece.toLowerCase()) {
-          return false; // Can't capture own piece
-        }
+  // Check if the destination has a piece of the same color
+  if (game[endRow][endCol] && 
+      ((piece === piece.toUpperCase() && game[endRow][endCol] === game[endRow][endCol].toUpperCase()) ||
+       (piece === piece.toLowerCase() && game[endRow][endCol] === game[endRow][endCol].toLowerCase()))) {
+    return false; // Can't capture own piece
+  }
 
-        switch (piece.toLowerCase()) {
-          case 'p': 
-            if (piece === 'P') {
-              if (dy === 0 && dx === -1 && !game[endRow][endCol]) return true;
-              if (startRow === 6 && dy === 0 && dx === -2 && !game[endRow][endCol] && !game[endRow + 1][endCol]) return true;
-              if (absDy === 1 && dx === -1 && game[endRow][endCol] && game[endRow][endCol].toLowerCase() !== piece.toLowerCase()) return true;
-            } else if (piece === 'p') {
-              if (dy === 0 && dx === 1 && !game[endRow][endCol]) return true;
-              if (startRow === 1 && dy === 0 && dx === 2 && !game[endRow][endCol] && !game[endRow - 1][endCol]) return true;
-              if (absDy === 1 && dx === 1 && game[endRow][endCol] && game[endRow][endCol].toLowerCase() !== piece.toLowerCase()) return true;
-            }
-            break;
-          case 'r':
-            if ((dx === 0 || dy === 0) && clearPath(startRow, startCol, endRow, endCol)) return true;
-            break;
-          case 'n':
-            if (absDx === 2 && absDy === 1 || absDx === 1 && absDy === 2) return true;
-            break;
-          case 'b':
-            if (absDx === absDy && clearPath(startRow, startCol, endRow, endCol)) return true;
-            break;
-          case 'q':
-            if ((dx === 0 || dy === 0 || absDx === absDy) && clearPath(startRow, startCol, endRow, endCol)) return true;
-            break;
-          case 'k':
-            if (absDx <= 1 && absDy <= 1) return true;
-            break;
-          default:
-            return false;
-        }
-        return false;
+  switch (piece.toLowerCase()) {
+    case 'p': 
+      if (piece === 'P') {
+        if (dy === 0 && dx === -1 && !game[endRow][endCol]) return true;
+        if (startRow === 6 && dy === 0 && dx === -2 && !game[endRow][endCol] && !game[endRow + 1][endCol]) return true;
+        if (absDy === 1 && dx === -1 && game[endRow][endCol]) return true;
+      } else if (piece === 'p') {
+        if (dy === 0 && dx === 1 && !game[endRow][endCol]) return true;
+        if (startRow === 1 && dy === 0 && dx === 2 && !game[endRow][endCol] && !game[endRow - 1][endCol]) return true;
+        if (absDy === 1 && dx === 1 && game[endRow][endCol]) return true;
       }
+      break;
+    case 'r':
+      if ((dx === 0 || dy === 0) && clearPath(startRow, startCol, endRow, endCol)) return true;
+      break;
+    case 'n':
+      if ((absDx === 2 && absDy === 1) || (absDx === 1 && absDy === 2)) return true;
+      break;
+    case 'b':
+      if (absDx === absDy && clearPath(startRow, startCol, endRow, endCol)) return true;
+      break;
+    case 'q':
+      if ((dx === 0 || dy === 0 || absDx === absDy) && clearPath(startRow, startCol, endRow, endCol)) return true;
+      break;
+    case 'k':
+      if (absDx <= 1 && absDy <= 1) return true;
+      break;
+    default:
+      return false;
+  }
+  return false;
+}
 
       function clearPath(startRow, startCol, endRow, endCol) {
         const stepRow = endRow > startRow ? 1 : endRow < startRow ? -1 : 0;
