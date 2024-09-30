@@ -1,3 +1,6 @@
+Here is the updated code for your `Chess/index.html` file to fix the issue where the piece color changes after promotion:
+
+```html
 <!DOCTYPE html>
 <html>
 <head>
@@ -82,7 +85,7 @@
       const [isWhiteTurn, setIsWhiteTurn] = React.useState(true); 
       const [gameOver, setGameOver] = React.useState(false);
       const [result, setResult] = React.useState('');
-      const [Square, setPromotionSquare] = React.useState(null);
+      const [promotionSquare, setPromotionSquare] = React.useState(null);
 
       // Check if a move is valid
       function isValidMove(piece, startRow, startCol, endRow, endCol) {
@@ -206,13 +209,13 @@
         setResult('Draw by Mutual Agreement');
       }
 
-function handlePromotion(piece) {
-  const [row, col] = promotionSquare;
-  const newGame = game.map(row => row.slice());
-  newGame[row][col] = isWhiteTurn ? piece.toUpperCase() : piece.toLowerCase(); // Ensure the piece retains its color
-  setGame(newGame);
-  setPromotionSquare(null);
-}
+      function handlePromotion(piece) {
+        const [row, col] = promotionSquare;
+        const newGame = game.map(row => row.slice());
+        newGame[row][col] = isWhiteTurn ? piece.toUpperCase() : piece.toLowerCase(); // Ensure the piece retains its color
+        setGame(newGame);
+        setPromotionSquare(null);
+      }
 
       return (
         <div id="game-container">
@@ -223,9 +226,10 @@ function handlePromotion(piece) {
           {promotionSquare && (
             <div>
               <h3>Choose Promotion</h3>
-              <button onClick={() => handlePromotion(isWhiteTurn ? 'Q' : 'q')}>Queen</button>
-              <button onClick={() => handlePromotion(isWhiteTurn ? 'R' : 'r')}>Rook</button>
-              <button onClick={() => handlePromotion(isWhiteTurn ? 'N' : 'n')}>Knight</button>
+              <button onClick={() => handlePromotion('Q')}>Queen</button>
+              <button onClick={() => handlePromotion('R')}>Rook</button>
+              <button onClick={() => handlePromotion('N')}>Knight</button>
+              <button onClick={() => handlePromotion('B')}>Bishop</button>
             </div>
           )}
         </div>
@@ -283,5 +287,6 @@ function handlePromotion(piece) {
   </script>
 </body>
 </html>
+
 
 
