@@ -25,11 +25,23 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
+      position: relative;
     }
 
     /* Optional: Add some margin for the text */
     h2 {
       margin-top: 20px;
+    }
+
+    h1 {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      border-radius: 10px;
     }
   </style>
 </head>
@@ -73,51 +85,51 @@
       const [promotionSquare, setPromotionSquare] = React.useState(null);
 
       // Check if a move is valid
-function isValidMove(piece, startRow, startCol, endRow, endCol) {
-  const dx = endRow - startRow;
-  const dy = endCol - startCol;
-  const absDx = Math.abs(dx);
-  const absDy = Math.abs(dy);
+      function isValidMove(piece, startRow, startCol, endRow, endCol) {
+        const dx = endRow - startRow;
+        const dy = endCol - startCol;
+        const absDx = Math.abs(dx);
+        const absDy = Math.abs(dy);
 
-  // Check if the destination has a piece of the same color
-  if (game[endRow][endCol] && 
-      ((piece === piece.toUpperCase() && game[endRow][endCol] === game[endRow][endCol].toUpperCase()) ||
-       (piece === piece.toLowerCase() && game[endRow][endCol] === game[endRow][endCol].toLowerCase()))) {
-    return false; // Can't capture own piece
-  }
+        // Check if the destination has a piece of the same color
+        if (game[endRow][endCol] && 
+            ((piece === piece.toUpperCase() && game[endRow][endCol] === game[endRow][endCol].toUpperCase()) ||
+             (piece === piece.toLowerCase() && game[endRow][endCol] === game[endRow][endCol].toLowerCase()))) {
+          return false; // Can't capture own piece
+        }
 
-  switch (piece.toLowerCase()) {
-    case 'p': 
-      if (piece === 'P') {
-        if (dy === 0 && dx === -1 && !game[endRow][endCol]) return true;
-        if (startRow === 6 && dy === 0 && dx === -2 && !game[endRow][endCol] && !game[endRow + 1][endCol]) return true;
-        if (absDy === 1 && dx === -1 && game[endRow][endCol]) return true;
-      } else if (piece === 'p') {
-        if (dy === 0 && dx === 1 && !game[endRow][endCol]) return true;
-        if (startRow === 1 && dy === 0 && dx === 2 && !game[endRow][endCol] && !game[endRow - 1][endCol]) return true;
-        if (absDy === 1 && dx === 1 && game[endRow][endCol]) return true;
+        switch (piece.toLowerCase()) {
+          case 'p': 
+            if (piece === 'P') {
+              if (dy === 0 && dx === -1 && !game[endRow][endCol]) return true;
+              if (startRow === 6 && dy === 0 && dx === -2 && !game[endRow][endCol] && !game[endRow + 1][endCol]) return true;
+              if (absDy === 1 && dx === -1 && game[endRow][endCol]) return true;
+            } else if (piece === 'p') {
+              if (dy === 0 && dx === 1 && !game[endRow][endCol]) return true;
+              if (startRow === 1 && dy === 0 && dx === 2 && !game[endRow][endCol] && !game[endRow - 1][endCol]) return true;
+              if (absDy === 1 && dx === 1 && game[endRow][endCol]) return true;
+            }
+            break;
+          case 'r':
+            if ((dx === 0 || dy === 0) && clearPath(startRow, startCol, endRow, endCol)) return true;
+            break;
+          case 'n':
+            if ((absDx === 2 && absDy === 1) || (absDx === 1 && absDy === 2)) return true;
+            break;
+          case 'b':
+            if (absDx === absDy && clearPath(startRow, startCol, endRow, endCol)) return true;
+            break;
+          case 'q':
+            if ((dx === 0 || dy === 0 || absDx === absDy) && clearPath(startRow, startCol, endRow, endCol)) return true;
+            break;
+          case 'k':
+            if (absDx <= 1 && absDy <= 1) return true;
+            break;
+          default:
+            return false;
+        }
+        return false;
       }
-      break;
-    case 'r':
-      if ((dx === 0 || dy === 0) && clearPath(startRow, startCol, endRow, endCol)) return true;
-      break;
-    case 'n':
-      if ((absDx === 2 && absDy === 1) || (absDx === 1 && absDy === 2)) return true;
-      break;
-    case 'b':
-      if (absDx === absDy && clearPath(startRow, startCol, endRow, endCol)) return true;
-      break;
-    case 'q':
-      if ((dx === 0 || dy === 0 || absDx === absDy) && clearPath(startRow, startCol, endRow, endCol)) return true;
-      break;
-    case 'k':
-      if (absDx <= 1 && absDy <= 1) return true;
-      break;
-    default:
-      return false;
-  }
-  return false;
-}
 
       function clearPath(startRow, startCol, endRow, endCol) {
         const stepRow = endRow > startRow ? 1 : endRow < startRow ? -1 : 0;
@@ -133,107 +145,49 @@ function isValidMove(piece, startRow, startCol, endRow, endCol) {
         return true;
       }
 
-function handleClick(row, col) {
-  if (gameOver) return;
+      function handleClick(row, col) {
+        if (gameOver) return;
 
-  const piece = game[row][col];
+        const piece = game[row][col];
 
-  if (selectedSquare) {
-    const [selectedRow, selectedCol] = selectedSquare;
-    const selectedPiece = game[selectedRow][selectedCol];
+        if (selectedSquare) {
+          const [selectedRow, selectedCol] = selectedSquare;
+          const selectedPiece = game[selectedRow][selectedCol];
 
-    if (isValidMove(selectedPiece, selectedRow, selectedCol, row, col) && 
-        (isWhiteTurn ? selectedPiece === selectedPiece.toUpperCase() : selectedPiece === selectedPiece.toLowerCase())) {
-      const newGame = game.map(row => row.slice());
-      if (newGame[row][col].toLowerCase() === 'k') {
-        setGameOver(true);
-        setResult(isWhiteTurn ? 'GAME OVER White Wins' : 'GAME OVER Black Wins');
-      } else {
-        newGame[row][col] = selectedPiece;
-        newGame[selectedRow][selectedCol] = '';
-        setGame(newGame);
-        setSelectedSquare(null);
-        setIsWhiteTurn(!isWhiteTurn);
-      }
+          if (isValidMove(selectedPiece, selectedRow, selectedCol, row, col) && 
+              (isWhiteTurn ? selectedPiece === selectedPiece.toUpperCase() : selectedPiece === selectedPiece.toLowerCase())) {
+            const newGame = game.map(row => row.slice());
+            if (newGame[row][col].toLowerCase() === 'k') {
+              setGameOver(true);
+              setResult(isWhiteTurn ? 'GAME OVER White Wins' : 'GAME OVER Black Wins');
+            } else {
+              newGame[row][col] = selectedPiece;
+              newGame[selectedRow][selectedCol] = '';
+              setGame(newGame);
+              setSelectedSquare(null);
+              setIsWhiteTurn(!isWhiteTurn);
+            }
 
-      // Check for pawn promotion
-      if (selectedPiece.toLowerCase() === 'p' && (row === 0 || row === 7)) {
-        setPromotionSquare([row, col]);
-      }
+            // Check for pawn promotion
+            if (selectedPiece.toLowerCase() === 'p' && (row === 0 || row === 7)) {
+              setPromotionSquare([row, col]);
+            }
 
-    } else {
-      setSelectedSquare(null);
-    }
-  } else {
-    if (piece && ((isWhiteTurn && piece === piece.toUpperCase()) || (!isWhiteTurn && piece === piece.toLowerCase()))) {
-      setSelectedSquare([row, col]);
-    }
-  }
-}
-
-function isCheckmate(game, isWhiteTurn) {
-  const kingPosition = findKingPosition(game, isWhiteTurn);
-  if (!kingPosition) return false;
-
-  const [kingRow, kingCol] = kingPosition;
-  if (!isInCheck(game, kingRow, kingCol, isWhiteTurn)) return false;
-
-  // Check if any move can save the king
-  for (let row = 0; row < 8; row++) {
-    for (let col = 0; col < 8; col++) {
-      const piece = game[row][col];
-      if (piece && (isWhiteTurn ? piece === piece.toUpperCase() : piece === piece.toLowerCase())) {
-        const validMoves = getValidMoves(game, row, col);
-        for (const [newRow, newCol] of validMoves) {
-          const newGame = game.map(row => row.slice());
-          newGame[newRow][newCol] = piece;
-          newGame[row][col] = '';
-          if (!isInCheck(newGame, kingRow, kingCol, isWhiteTurn)) return false;
+          } else {
+            setSelectedSquare(null);
+          }
+        } else {
+          if (piece && ((isWhiteTurn && piece === piece.toUpperCase()) || (!isWhiteTurn && piece === piece.toLowerCase()))) {
+            setSelectedSquare([row, col]);
+          }
         }
       }
-    }
-  }
-  return true;
-}
 
-function findKingPosition(game, isWhiteTurn) {
-  const kingSymbol = isWhiteTurn ? 'K' : 'k';
-  for (let row = 0; row < 8; row++) {
-    for (let col = 0; col < 8; col++) {
-      if (game[row][col] === kingSymbol) return [row, col];
-    }
-  }
-  return null;
-}
-
-function isInCheck(game, kingRow, kingCol, isWhiteTurn) {
-  const opponentMoves = getAllOpponentMoves(game, !isWhiteTurn);
-  for (const [row, col] of opponentMoves) {
-    if (row === kingRow && col === kingCol) return true;
-  }
-  return false;
-}
-
-function getAllOpponentMoves(game, isWhiteTurn) {
-  const moves = [];
-  for (let row = 0; row < 8; row++) {
-    for (let col = 0; col < 8; col++) {
-      const piece = game[row][col];
-      if (piece && (isWhiteTurn ? piece === piece.toUpperCase() : piece === piece.toLowerCase())) {
-        moves.push(...getValidMoves(game, row, col));
+      function isCheckmate(game, isWhiteTurn) {
+        // Implement checkmate logic
+        // For simplicity, this example does not include full checkmate detection
+        return false;
       }
-    }
-  }
-  return moves;
-}
-
-function getValidMoves(game, row, col) {
-  const piece = game[row][col];
-  const moves = [];
-  // (Implement logic for getting valid moves for the piece)
-  // Add valid moves to the moves array
-  return moves;
-}
 
       function isStalemate(game, isWhiteTurn) {
         // Implement stalemate logic
@@ -260,24 +214,23 @@ function getValidMoves(game, row, col) {
         setPromotionSquare(null);
       }
 
-return (
-  <div id="game-container">
-    <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
-    <h1 style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1 }}>
-      {gameOver ? result : ''}
-    </h1>
-    <h2>{!gameOver ? (isWhiteTurn ? "White's Turn" : "Black's Turn") : ''}</h2>
-    <button onClick={handleMutualAgreement} disabled={gameOver}>Mutual Agreement</button>
-    {promotionSquare && (
-      <div>
-        <h3>Choose Promotion</h3>
-        <button onClick={() => handlePromotion(isWhiteTurn ? 'Q' : 'q')}>Queen</button>
-        <button onClick={() => handlePromotion(isWhiteTurn ? 'R' : 'r')}>Rook</button>
-        <button onClick={() => handlePromotion(isWhiteTurn ? 'N' : 'n')}>Knight</button>
-      </div>
-    )}
-  </div>
-);
+      return (
+        <div id="game-container">
+          <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
+          {gameOver && <h1>{result}</h1>}
+          <h2>{!gameOver ? (isWhiteTurn ? "White's Turn" : "Black's Turn") : ''}</h2>
+          <button onClick={handleMutualAgreement} disabled={gameOver}>Mutual Agreement</button>
+          {promotionSquare && (
+            <div>
+              <h3>Choose Promotion</h3>
+              <button onClick={() => handlePromotion(isWhiteTurn ? 'Q' : 'q')}>Queen</button>
+              <button onClick={() => handlePromotion(isWhiteTurn ? 'R' : 'r')}>Rook</button>
+              <button onClick={() => handlePromotion(isWhiteTurn ? 'N' : 'n')}>Knight</button>
+            </div>
+          )}
+        </div>
+      );
+    }
 
     function Board({ game, onSquareClick, selectedSquare }) {
       return (
@@ -330,9 +283,5 @@ return (
   </script>
 </body>
 </html>
-
-
-
-
 
 
