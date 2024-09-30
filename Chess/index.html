@@ -133,43 +133,43 @@ function isValidMove(piece, startRow, startCol, endRow, endCol) {
         return true;
       }
 
-      function handleClick(row, col) {
-        if (gameOver) return;
+function handleClick(row, col) {
+  if (gameOver) return;
 
-        const piece = game[row][col];
+  const piece = game[row][col];
 
-        if (selectedSquare) {
-          const [selectedRow, selectedCol] = selectedSquare;
-          const selectedPiece = game[selectedRow][selectedCol];
+  if (selectedSquare) {
+    const [selectedRow, selectedCol] = selectedSquare;
+    const selectedPiece = game[selectedRow][selectedCol];
 
-          if (isValidMove(selectedPiece, selectedRow, selectedCol, row, col) && 
-              (isWhiteTurn ? selectedPiece === selectedPiece.toUpperCase() : selectedPiece === selectedPiece.toLowerCase())) {
-            const newGame = game.map(row => row.slice());
-            if (newGame[row][col].toLowerCase() === 'k') {
-              setGameOver(true);
-              setResult(isWhiteTurn ? 'White Wins' : 'Black Wins');
-            } else {
-              newGame[row][col] = selectedPiece;
-              newGame[selectedRow][selectedCol] = '';
-              setGame(newGame);
-              setSelectedSquare(null);
-              setIsWhiteTurn(!isWhiteTurn);
-            }
-
-            // Check for pawn promotion
-            if (selectedPiece.toLowerCase() === 'p' && (row === 0 || row === 7)) {
-              setPromotionSquare([row, col]);
-            }
-
-          } else {
-            setSelectedSquare(null);
-          }
-        } else {
-          if (piece && ((isWhiteTurn && piece === piece.toUpperCase()) || (!isWhiteTurn && piece === piece.toLowerCase()))) {
-            setSelectedSquare([row, col]);
-          }
-        }
+    if (isValidMove(selectedPiece, selectedRow, selectedCol, row, col) && 
+        (isWhiteTurn ? selectedPiece === selectedPiece.toUpperCase() : selectedPiece === selectedPiece.toLowerCase())) {
+      const newGame = game.map(row => row.slice());
+      if (newGame[row][col].toLowerCase() === 'k') {
+        setGameOver(true);
+        setResult(isWhiteTurn ? 'GAME OVER White Wins' : 'GAME OVER Black Wins');
+      } else {
+        newGame[row][col] = selectedPiece;
+        newGame[selectedRow][selectedCol] = '';
+        setGame(newGame);
+        setSelectedSquare(null);
+        setIsWhiteTurn(!isWhiteTurn);
       }
+
+      // Check for pawn promotion
+      if (selectedPiece.toLowerCase() === 'p' && (row === 0 || row === 7)) {
+        setPromotionSquare([row, col]);
+      }
+
+    } else {
+      setSelectedSquare(null);
+    }
+  } else {
+    if (piece && ((isWhiteTurn && piece === piece.toUpperCase()) || (!isWhiteTurn && piece === piece.toLowerCase()))) {
+      setSelectedSquare([row, col]);
+    }
+  }
+}
 
 function isCheckmate(game, isWhiteTurn) {
   const kingPosition = findKingPosition(game, isWhiteTurn);
@@ -260,22 +260,24 @@ function getValidMoves(game, row, col) {
         setPromotionSquare(null);
       }
 
-      return (
-        <div id="game-container">
-          <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
-          <h2>{gameOver ? result : (isWhiteTurn ? "White's Turn" : "Black's Turn")}</h2>
-          <button onClick={handleMutualAgreement} disabled={gameOver}>Mutual Agreement</button>
-          {promotionSquare && (
-            <div>
-              <h3>Choose Promotion</h3>
-              <button onClick={() => handlePromotion(isWhiteTurn ? 'Q' : 'q')}>Queen</button>
-              <button onClick={() => handlePromotion(isWhiteTurn ? 'R' : 'r')}>Rook</button>
-              <button onClick={() => handlePromotion(isWhiteTurn ? 'N' : 'n')}>Knight</button>
-            </div>
-          )}
-        </div>
-      );
-    }
+return (
+  <div id="game-container">
+    <Board game={game} onSquareClick={handleClick} selectedSquare={selectedSquare} />
+    <h1 style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1 }}>
+      {gameOver ? result : ''}
+    </h1>
+    <h2>{!gameOver ? (isWhiteTurn ? "White's Turn" : "Black's Turn") : ''}</h2>
+    <button onClick={handleMutualAgreement} disabled={gameOver}>Mutual Agreement</button>
+    {promotionSquare && (
+      <div>
+        <h3>Choose Promotion</h3>
+        <button onClick={() => handlePromotion(isWhiteTurn ? 'Q' : 'q')}>Queen</button>
+        <button onClick={() => handlePromotion(isWhiteTurn ? 'R' : 'r')}>Rook</button>
+        <button onClick={() => handlePromotion(isWhiteTurn ? 'N' : 'n')}>Knight</button>
+      </div>
+    )}
+  </div>
+);
 
     function Board({ game, onSquareClick, selectedSquare }) {
       return (
