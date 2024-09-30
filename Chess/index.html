@@ -171,11 +171,69 @@ function isValidMove(piece, startRow, startCol, endRow, endCol) {
         }
       }
 
-      function isCheckmate(game, isWhiteTurn) {
-        // Implement checkmate logic
-        // For simplicity, this example does not include full checkmate detection
-        return false;
+function isCheckmate(game, isWhiteTurn) {
+  const kingPosition = findKingPosition(game, isWhiteTurn);
+  if (!kingPosition) return false;
+
+  const [kingRow, kingCol] = kingPosition;
+  if (!isInCheck(game, kingRow, kingCol, isWhiteTurn)) return false;
+
+  // Check if any move can save the king
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const piece = game[row][col];
+      if (piece && (isWhiteTurn ? piece === piece.toUpperCase() : piece === piece.toLowerCase())) {
+        const validMoves = getValidMoves(game, row, col);
+        for (const [newRow, newCol] of validMoves) {
+          const newGame = game.map(row => row.slice());
+          newGame[newRow][newCol] = piece;
+          newGame[row][col] = '';
+          if (!isInCheck(newGame, kingRow, kingCol, isWhiteTurn)) return false;
+        }
       }
+    }
+  }
+  return true;
+}
+
+function findKingPosition(game, isWhiteTurn) {
+  const kingSymbol = isWhiteTurn ? 'K' : 'k';
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      if (game[row][col] === kingSymbol) return [row, col];
+    }
+  }
+  return null;
+}
+
+function isInCheck(game, kingRow, kingCol, isWhiteTurn) {
+  const opponentMoves = getAllOpponentMoves(game, !isWhiteTurn);
+  for (const [row, col] of opponentMoves) {
+    if (row === kingRow && col === kingCol) return true;
+  }
+  return false;
+}
+
+function getAllOpponentMoves(game, isWhiteTurn) {
+  const moves = [];
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const piece = game[row][col];
+      if (piece && (isWhiteTurn ? piece === piece.toUpperCase() : piece === piece.toLowerCase())) {
+        moves.push(...getValidMoves(game, row, col));
+      }
+    }
+  }
+  return moves;
+}
+
+function getValidMoves(game, row, col) {
+  const piece = game[row][col];
+  const moves = [];
+  // (Implement logic for getting valid moves for the piece)
+  // Add valid moves to the moves array
+  return moves;
+}
 
       function isStalemate(game, isWhiteTurn) {
         // Implement stalemate logic
