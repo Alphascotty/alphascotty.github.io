@@ -206,13 +206,18 @@
         setResult('Draw by Mutual Agreement');
       }
 
-      function handlePromotion(piece) {
-        const [row, col] = promotionSquare;
-        const newGame = game.map(row => row.slice());
-        newGame[row][col] = isWhiteTurn ? piece.toUpperCase() : piece.toLowerCase(); // Ensure the piece retains its color
-        setGame(newGame);
-        setPromotionSquare(null);
-      }
+function handlePromotion(piece) {
+  const [row, col] = promotionSquare;
+  const newGame = game.map(row => row.slice());
+  
+  // Convert to uppercase for white and lowercase for black to retain color
+  const promotedPiece = isWhiteTurn ? piece.toUpperCase() : piece.toLowerCase();
+  
+  newGame[row][col] = promotedPiece;
+  
+  setGame(newGame);
+  setPromotionSquare(null);
+}
 
       return (
         <div id="game-container">
