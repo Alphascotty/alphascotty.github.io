@@ -211,7 +211,7 @@ function handlePromotion(piece) {
   const newGame = game.map(row => row.slice());
   
   // Convert to uppercase for white and lowercase for black to retain color
-  const promotedPiece = isWhiteTurn piece.toUpperCase() : piece.toLowerCase();
+  const promotedPiece = isWhiteTurn ? piece.toUpperCase() : piece.toLowerCase();
   
   newGame[row][col] = promotedPiece;
   
