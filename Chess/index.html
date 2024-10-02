@@ -145,43 +145,44 @@
         return true;
       }
 
-      function handleClick(row, col) {
-        if (gameOver) return;
+function handleClick(row, col) {
+  if (gameOver) return;
 
-        const piece = game[row][col];
+  const piece = game[row][col];
 
-        if (selectedSquare) {
-          const [selectedRow, selectedCol] = selectedSquare;
-          const selectedPiece = game[selectedRow][selectedCol];
+  if (selectedSquare) {
+    const [selectedRow, selectedCol] = selectedSquare;
+    const selectedPiece = game[selectedRow][selectedCol];
 
-          if (isValidMove(selectedPiece, selectedRow, selectedCol, row, col) && 
-              (isWhiteTurn ? selectedPiece === selectedPiece.toUpperCase() : selectedPiece === selectedPiece.toLowerCase())) {
-            const newGame = game.map(row => row.slice());
-            if (newGame[row][col].toLowerCase() === 'k') {
-              setGameOver(true);
-              setResult(isWhiteTurn ? 'GAME OVER WHITE WINS' : 'GAME OVER BLACK WINS');
-            } else {
-              newGame[row][col] = selectedPiece;
-              newGame[selectedRow][selectedCol] = '';
-              setGame(newGame);
-              setSelectedSquare(null);
-              setIsWhiteTurn(!isWhiteTurn);
-            }
-
-            // Check for pawn promotion
-            if (selectedPiece.toLowerCase() === 'p' && (row === 0 || row === 7)) {
-              setPromotionSquare([row, col]);
-            }
-
-          } else {
-            setSelectedSquare(null);
-          }
-        } else {
-          if (piece && ((isWhiteTurn && piece === piece.toUpperCase()) || (!isWhiteTurn && piece === piece.toLowerCase()))) {
-            setSelectedSquare([row, col]);
-          }
-        }
+    if (isValidMove(selectedPiece, selectedRow, selectedCol, row, col) && 
+        (isWhiteTurn ? selectedPiece === selectedPiece.toUpperCase() : selectedPiece === selectedPiece.toLowerCase())) {
+      const newGame = game.map(row => row.slice());
+      if (newGame[row][col].toLowerCase() === 'k') {
+        setGameOver(true);
+        setResult(isWhiteTurn ? 'GAME OVER WHITE WINS' : 'GAME OVER BLACK WINS');
+      } else {
+        newGame[row][col] = selectedPiece;
+        newGame[selectedRow][selectedCol] = '';
+        setGame(newGame);
+        setSelectedSquare(null);
+        setIsWhiteTurn(!isWhiteTurn);
       }
+
+      // Check for pawn promotion
+      if (selectedPiece.toLowerCase() === 'p' && (row === 0 || row === 7)) {
+        setPromotionSquare([row, col]);
+        handlePromotion('Q'); // Automatically promote to Queen for simplicity
+      }
+
+    } else {
+      setSelectedSquare(null);
+    }
+  } else {
+    if (piece && ((isWhiteTurn && piece === piece.toUpperCase()) || (!isWhiteTurn && piece === piece.toLowerCase()))) {
+      setSelectedSquare([row, col]);
+    }
+  }
+}
 
       function isCheckmate(game, isWhiteTurn) {
         // Implement checkmate logic
