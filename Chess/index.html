@@ -84,6 +84,16 @@
       const [result, setResult] = React.useState('');
       const [promotionSquare, setPromotionSquare] = React.useState(null);
 
+      // Restart function
+      function restartGame() {
+        setGame(initialGameState);
+        setSelectedSquare(null);
+        setIsWhiteTurn(true);
+        setGameOver(false);
+        setResult('');
+        setPromotionSquare(null);
+      }
+
       // Check if a move is valid
       function isValidMove(piece, startRow, startCol, endRow, endCol) {
         const dx = endRow - startRow;
@@ -145,44 +155,44 @@
         return true;
       }
 
-function handleClick(row, col) {
-  if (gameOver) return;
+      function handleClick(row, col) {
+        if (gameOver) return;
 
-  const piece = game[row][col];
+        const piece = game[row][col];
 
-  if (selectedSquare) {
-    const [selectedRow, selectedCol] = selectedSquare;
-    const selectedPiece = game[selectedRow][selectedCol];
+        if (selectedSquare) {
+          const [selectedRow, selectedCol] = selectedSquare;
+          const selectedPiece = game[selectedRow][selectedCol];
 
-    if (isValidMove(selectedPiece, selectedRow, selectedCol, row, col) && 
-        (isWhiteTurn ? selectedPiece === selectedPiece.toUpperCase() : selectedPiece === selectedPiece.toLowerCase())) {
-      const newGame = game.map(row => row.slice());
-      if (newGame[row][col].toLowerCase() === 'k') {
-        setGameOver(true);
-        setResult(isWhiteTurn ? 'GAME OVER WHITE WINS' : 'GAME OVER BLACK WINS');
-      } else {
-        newGame[row][col] = selectedPiece;
-        newGame[selectedRow][selectedCol] = '';
-        setGame(newGame);
-        setSelectedSquare(null);
-        setIsWhiteTurn(!isWhiteTurn);
+          if (isValidMove(selectedPiece, selectedRow, selectedCol, row, col) && 
+              (isWhiteTurn ? selectedPiece === selectedPiece.toUpperCase() : selectedPiece === selectedPiece.toLowerCase())) {
+            const newGame = game.map(row => row.slice());
+            if (newGame[row][col].toLowerCase() === 'k') {
+              setGameOver(true);
+              setResult(isWhiteTurn ? 'GAME OVER WHITE WINS' : 'GAME OVER BLACK WINS');
+            } else {
+              newGame[row][col] = selectedPiece;
+              newGame[selectedRow][selectedCol] = '';
+              setGame(newGame);
+              setSelectedSquare(null);
+              setIsWhiteTurn(!isWhiteTurn);
+            }
+
+            // Check for pawn promotion
+            if (selectedPiece.toLowerCase() === 'p' && (row === 0 || row === 7)) {
+              setPromotionSquare([row, col]);
+              handlePromotion('Q'); // Automatically promote to Queen for simplicity
+            }
+
+          } else {
+            setSelectedSquare(null);
+          }
+        } else {
+          if (piece && ((isWhiteTurn && piece === piece.toUpperCase()) || (!isWhiteTurn && piece === piece.toLowerCase()))) {
+            setSelectedSquare([row, col]);
+          }
+        }
       }
-
-      // Check for pawn promotion
-      if (selectedPiece.toLowerCase() === 'p' && (row === 0 || row === 7)) {
-        setPromotionSquare([row, col]);
-        handlePromotion('Q'); // Automatically promote to Queen for simplicity
-      }
-
-    } else {
-      setSelectedSquare(null);
-    }
-  } else {
-    if (piece && ((isWhiteTurn && piece === piece.toUpperCase()) || (!isWhiteTurn && piece === piece.toLowerCase()))) {
-      setSelectedSquare([row, col]);
-    }
-  }
-}
 
       function isCheckmate(game, isWhiteTurn) {
         // Implement checkmate logic
@@ -207,18 +217,18 @@ function handleClick(row, col) {
         setResult('Draw by Mutual Agreement');
       }
 
-function handlePromotion(piece) {
-  const [row, col] = promotionSquare;
-  const newGame = game.map(row => row.slice());
-  
-  // Convert to uppercase for white and lowercase for black to retain color
-  const promotedPiece = isWhiteTurn ? piece.toUpperCase() : piece.toLowerCase();
-  
-  newGame[row][col] = promotedPiece;
-  
-  setGame(newGame);
-  setPromotionSquare(null);
-}
+      function handlePromotion(piece) {
+        const [row, col] = promotionSquare;
+        const newGame = game.map(row => row.slice());
+        
+        // Convert to uppercase for white and lowercase for black to retain color
+        const promotedPiece = isWhiteTurn ? piece.toUpperCase() : piece.toLowerCase();
+        
+        newGame[row][col] = promotedPiece;
+        
+        setGame(newGame);
+        setPromotionSquare(null);
+      }
 
       return (
         <div id="game-container">
@@ -226,6 +236,7 @@ function handlePromotion(piece) {
           {gameOver && <h1>{result}</h1>}
           <h2>{!gameOver ? (isWhiteTurn ? "White's Turn" : "Black's Turn") : ''}</h2>
           <button onClick={handleMutualAgreement} disabled={gameOver}>Mutual Agreement</button>
+          <button onClick={restartGame}>Restart Game</button>
           {promotionSquare && (
             <div>
               <h3>Choose Promotion</h3>
