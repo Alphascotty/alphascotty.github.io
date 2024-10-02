@@ -84,6 +84,12 @@
       const [result, setResult] = React.useState('');
       const [promotionSquare, setPromotionSquare] = React.useState(null);
 
+      // Text-to-Speech Function
+      function speak(text) {
+        const msg = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(msg);
+      }
+
       // Restart function
       function restartGame() {
         setGame(initialGameState);
@@ -92,6 +98,7 @@
         setGameOver(false);
         setResult('');
         setPromotionSquare(null);
+        speak("Game restarted. White's turn.");
       }
 
       // Check if a move is valid
@@ -169,19 +176,23 @@
             const newGame = game.map(row => row.slice());
             if (newGame[row][col].toLowerCase() === 'k') {
               setGameOver(true);
-              setResult(isWhiteTurn ? 'GAME OVER WHITE WINS' : 'GAME OVER BLACK WINS');
+              const winner = isWhiteTurn ? 'White' : 'Black';
+              setResult(`GAME OVER ${winner} WINS`);
+              speak(`Game over. ${winner} wins.`);
             } else {
               newGame[row][col] = selectedPiece;
               newGame[selectedRow][selectedCol] = '';
               setGame(newGame);
               setSelectedSquare(null);
               setIsWhiteTurn(!isWhiteTurn);
+              speak(`${selectedPiece} moves to ${String.fromCharCode(97 + col)}${8 - row}`);
             }
 
             // Check for pawn promotion
             if (selectedPiece.toLowerCase() === 'p' && (row === 0 || row === 7)) {
               setPromotionSquare([row, col]);
               handlePromotion('Q'); // Automatically promote to Queen for simplicity
+              speak(`${selectedPiece} promoted to Queen`);
             }
 
           } else {
@@ -215,6 +226,7 @@
       function handleMutualAgreement() {
         setGameOver(true);
         setResult('Draw by Mutual Agreement');
+        speak('Draw by mutual agreement.');
       }
 
       function handlePromotion(piece) {
@@ -229,6 +241,10 @@
         setGame(newGame);
         setPromotionSquare(null);
       }
+
+      React.useEffect(() => {
+        speak("Welcome to the chess game. White's turn.");
+      }, []);
 
       return (
         <div id="game-container">
@@ -301,5 +317,3 @@
   </script>
 </body>
 </html>
-
-
