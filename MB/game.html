@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match Puzzle Game</title>
+    <style>
+        body {
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(8, 60px);
+            grid-template-rows: repeat(8, 60px);
+            background-color: white;
+            border: 2px solid black;
+            gap: 2px;
+        }
+        
+        .grid-item {
+            width: 60px;
+            height: 60px;
+            background-color: white;
+            border: 1px solid black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+
+        .fruit-1 {
+            background-image: url('https://example.com/apple.png'); /* Replace with your own image URLs */
+            background-size: cover;
+        }
+
+        .fruit-2 {
+            background-image: url('https://example.com/banana.png');
+            background-size: cover;
+        }
+
+        .fruit-3 {
+            background-image: url('https://example.com/grapes.png');
+            background-size: cover;
+        }
+
+        .fruit-4 {
+            background-image: url('https://example.com/orange.png');
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="grid-container">
+        <!-- 8x8 Grid with fruit types (1-4) -->
+        <div class="grid-item fruit-1"></div>
+        <div class="grid-item fruit-2"></div>
+        <div class="grid-item fruit-3"></div>
+        <div class="grid-item fruit-4"></div>
+        <!-- Repeat the divs with fruits, using classes fruit-1 to fruit-4 -->
+        <!-- Example repeated elements for simplicity -->
+        <div class="grid-item fruit-1"></div>
+        <div class="grid-item fruit-2"></div>
+        <div class="grid-item fruit-3"></div>
+        <div class="grid-item fruit-4"></div>
+        <div class="grid-item fruit-1"></div>
+        <div class="grid-item fruit-2"></div>
+        <div class="grid-item fruit-3"></div>
+        <div class="grid-item fruit-4"></div>
+        <!-- Continue until the grid is filled -->
+    </div>
+
+</body>
+</html>
