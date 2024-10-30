@@ -1,8 +1,7 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Babylon.js Chessboard with STL Export</title>
+    <title>Babylon.js Chessboard with STL Export and Rules</title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="https://cdn.babylonjs.com/stlExporter/babylon.stlExporter.min.js"></script>
@@ -78,51 +77,61 @@
                 selectedPiece = piece;
             }));
 
+            piece.name = name;  // Set the piece type for move validation
+            piece.color = color;  // Set the piece color for turn management
             return piece;
         };
 
         const pieces = [];
-        // Place pawns
-        for (let i = 0; i < 8; i++) {
-            pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, 0.5), new BABYLON.Color3(1, 1, 1)));
-            pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, -0.5), new BABYLON.Color3(0, 0, 0)));
-        }
+        // Define positions of pieces here, similar to your setup for pawns, rooks, etc.
+        // Example: 
+        pieces.push(createPiece("pawn", new BABYLON.Vector3(-3.5, 0.5, 1.5), new BABYLON.Color3(1, 1, 1)));
 
-        // Place rooks
-        pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
-        pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
-        pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
-        pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
+        // Function to validate move based on piece type
+        const isValidMove = (piece, targetX, targetZ) => {
+            const dx = Math.abs(piece.position.x - targetX);
+            const dz = Math.abs(piece.position.z - targetZ);
 
-        // Place knights
-        pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
-        pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
-        pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
-        pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
-
-        // Place bishops
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
-
-        // Place queens
-        pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
-        pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
-
-        // Place kings
-        pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
-        pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
+            switch (piece.name) {
+                case "pawn":
+                    return dz === 1 && dx === 0;  // Only move forward by one square
+                case "rook":
+                    return dx === 0 || dz === 0;  // Move straight line
+                case "knight":
+                    return (dx === 2 && dz === 1) || (dx === 1 && dz === 2);  // L-shape move
+                case "bishop":
+                    return dx === dz;  // Diagonal move
+                case "queen":
+                    return dx === dz || dx === 0 || dz === 0;  // Diagonal or straight move
+                case "king":
+                    return dx <= 1 && dz <= 1;  // One square any direction
+                default:
+                    return false;
+            }
+        };
 
         let selectedPiece = null;
+        let isWhiteTurn = true;  // Initialize turn
 
         scene.onPointerDown = (evt, pickResult) => {
             if (selectedPiece) {
                 const pickedTile = pickResult.pickedMesh;
                 if (pickedTile && pickedTile.name.startsWith("tile")) {
-                    selectedPiece.position.x = pickedTile.position.x;
-                    selectedPiece.position.z = pickedTile.position.z;
-                    selectedPiece = null;
+                    const targetX = pickedTile.position.x;
+                    const targetZ = pickedTile.position.z;
+
+                    if (isValidMove(selectedPiece, targetX, targetZ)) {
+                        selectedPiece.position.x = targetX;
+                        selectedPiece.position.z = targetZ;
+                        selectedPiece = null;
+                        isWhiteTurn = !isWhiteTurn;  // Switch turn
+                    }
+                }
+            } else if (pickResult.pickedMesh && pickResult.pickedMesh.color) {
+                const piece = pickResult.pickedMesh;
+                if ((isWhiteTurn && piece.color.equals(new BABYLON.Color3(1, 1, 1))) ||
+                    (!isWhiteTurn && piece.color.equals(new BABYLON.Color3(0, 0, 0)))) {
+                    selectedPiece = piece;
                 }
             }
         };
