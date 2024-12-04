@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="initial-scale=1.0, width=device-width">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Babylon.js Village </title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.js"></script>
@@ -23,13 +23,12 @@
             camera.attachControl(canvas, true);
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
 
-            // Array to hold the positions of each village, stacked vertically
-            const villageSpacing = 30; // Space between villages in the y-axis
+            // Array to hold the positions of each village in the larger village map
             const villagePositions = [
-                new BABYLON.Vector3(0, 0, 0),            // First village at the origin
-                new BABYLON.Vector3(0, villageSpacing, 0), // Second village, 30 units above on the Y-axis
-                new BABYLON.Vector3(0, villageSpacing * 2, 0), // Third village, 60 units above
-                new BABYLON.Vector3(0, villageSpacing * 3, 0) // Fourth village, 90 units above
+                new BABYLON.Vector3(0, 0, 0),          // First village
+                new BABYLON.Vector3(30, 0, 0),         // Second village
+                new BABYLON.Vector3(60, 0, 0),         // Third village
+                new BABYLON.Vector3(90, 0, 0),         // Fourth village
             ];
 
             // Load four village models and position them accordingly
