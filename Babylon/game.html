@@ -130,12 +130,12 @@
             // Create water below ground
             const waterMaterial = new BABYLON.WaterMaterial("waterMaterial", scene);
             waterMaterial.bumpTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/waterbump.png", scene);
-            waterMaterial.windForce = 3;
-            waterMaterial.waveHeight = 0.5;
-            waterMaterial.waveLength = 0.5;
-            waterMaterial.windDirection = new BABYLON.Vector2(1, 1);
+            
+            // Set windForce, waveHeight, and waveLength to 0
+            waterMaterial.windForce = 0;
+            waterMaterial.waveHeight = 0;
+            waterMaterial.waveLength = 0;
             waterMaterial.waterColor = new BABYLON.Color3(0, 0, 1); // Blue water color
-            waterMaterial.addToRenderList(sphere); // Make sure water interacts with other objects
 
             const waterMesh = BABYLON.MeshBuilder.CreateGround("water", {
                 width: 100,
@@ -170,3 +170,4 @@
     </script>
 </body>
 </html>
+
