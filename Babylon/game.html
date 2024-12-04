@@ -47,22 +47,6 @@
             waterMesh.material = waterMaterial;
             waterMesh.position = new BABYLON.Vector3(7.5, -0.1, 7.5); // Position it to cover the outskirts
 
-            // Create wooden tower walls
-            const wallMaterial = new BABYLON.StandardMaterial("wallMaterial", scene);
-            wallMaterial.diffuseTexture = new BABYLON.Texture("https://example.com/wood_texture.jpg", scene);
-
-            const createWall = function (position, rotation) {
-                const wall = BABYLON.MeshBuilder.CreateBox("wall", { width: 0.5, height: 5, depth: 20 }, scene);
-                wall.position = position;
-                wall.rotation.y = rotation;
-                wall.material = wallMaterial;
-                return wall;
-            };
-
-            // North and South gates
-            const northGate = createWall(new BABYLON.Vector3(7.5, 2.5, -10), 0);
-            const southGate = createWall(new BABYLON.Vector3(7.5, 2.5, 25), Math.PI);
-
             // Dude walking animation
             const walk = function (turn, dist) {
                 this.turn = turn;
