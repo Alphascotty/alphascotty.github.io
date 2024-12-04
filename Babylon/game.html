@@ -1,3 +1,5 @@
+Here is the updated game.html file with walls of height 40 placed on the outskirts over the water of the big village:
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,6 +48,24 @@
             waterMaterial.alpha = 0.5; // Semi-transparent
             waterMesh.material = waterMaterial;
             waterMesh.position = new BABYLON.Vector3(7.5, -0.1, 7.5); // Position it to cover the outskirts
+
+            // Create walls over the water
+            const wallMaterial = new BABYLON.StandardMaterial("wallMaterial", scene);
+            wallMaterial.diffuseTexture = new BABYLON.Texture("https://example.com/wood_texture.jpg", scene);
+
+            const createWall = function (position, rotation) {
+                const wall = BABYLON.MeshBuilder.CreateBox("wall", { width: 0.5, height: 40, depth: 1000 }, scene);
+                wall.position = position;
+                wall.rotation.y = rotation;
+                wall.material = wallMaterial;
+                return wall;
+            };
+
+            // Create walls on the outskirts
+            const northWall = createWall(new BABYLON.Vector3(7.5, 20, -500), 0);
+            const southWall = createWall(new BABYLON.Vector3(7.5, 20, 515), Math.PI);
+            const eastWall = createWall(new BABYLON.Vector3(500, 20, 7.5), Math.PI / 2);
+            const westWall = createWall(new BABYLON.Vector3(-500, 20, 7.5), -Math.PI / 2);
 
             // Dude walking animation
             const walk = function (turn, dist) {
