@@ -95,46 +95,6 @@
                 });
             });
 
-            // Create a sphere
-            var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {
-                diameter: 0.5, // diameter of the sphere
-                segments: 32, // number of segments
-            }, scene);
-
-            // Position the sphere
-            sphere.position = new BABYLON.Vector3(0, 0, 6);
-            var material = new BABYLON.StandardMaterial("material", scene);
-            material.diffuseColor = new BABYLON.Color3(1, 0, 0); // red color
-            sphere.material = material;
-
-            // Create additional spheres
-            var sphereProperties = {
-                diameter: 2,
-                segments: 32,
-            };
-
-            var materials = [
-                new BABYLON.StandardMaterial("material1", scene),
-                new BABYLON.StandardMaterial("material2", scene),
-                new BABYLON.StandardMaterial("material3", scene),
-            ];
-
-            materials[0].diffuseColor = new BABYLON.Color3(1, 0, 0); // Red
-            materials[1].diffuseColor = new BABYLON.Color3(0, 1, 0); // Green
-            materials[2].diffuseColor = new BABYLON.Color3(0, 0, 1); // Blue
-
-            var positions = [
-                new BABYLON.Vector3(0, 0, 0),
-                new BABYLON.Vector3(0, 2, 0),
-                new BABYLON.Vector3(2, 0, 0),
-            ];
-
-            for (var i = 0; i < 3; i++) {
-                var sphere = BABYLON.MeshBuilder.CreateSphere("sphere" + i, sphereProperties, scene);
-                sphere.position = positions[i];
-                sphere.material = materials[i];
-            }
-
             return scene;
         };
 
