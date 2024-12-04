@@ -19,131 +19,47 @@
         const createScene = function () {
             const scene = new BABYLON.Scene(engine);
 
-            const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 1.5, Math.PI / 2.2, 15, new BABYLON.Vector3(0, 0, 0));
+            // Create the camera and set the position
+            const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2, 15, new BABYLON.Vector3(0, 0, 0));
             camera.attachControl(canvas, true);
+
+            // Create light
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
 
-            // Array to hold the positions of each village in the larger village map (2x2 grid)
-            const villagePositions = [
-                new BABYLON.Vector3(0, 0, 0),          // First village at (0, 0, 0)
-                new BABYLON.Vector3(16, 0, 0),         // Second village at (30, 0, 0)
-                new BABYLON.Vector3(0, 0, 16),         // Third village at (0, 0, 30)
-                new BABYLON.Vector3(16, 0, 16),        // Fourth village at (30, 0, 30)
-            ];
-
-            // Load four village models and position them accordingly
-            villagePositions.forEach((position, index) => {
-                BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", "village.glb").then((result) => {
-                    const village = result.meshes[0];
-                    village.position = position; // Set the position for each village
-                });
-            });
-
-            // Dude walking animation
-            const walk = function (turn, dist) {
-                this.turn = turn;
-                this.dist = dist;
-            };
-
-            const track = [];
-            track.push(new walk(86, 7));
-            track.push(new walk(-85, 14.8));
-            track.push(new walk(-93, 16.5));
-            track.push(new walk(48, 25.5));
-            track.push(new walk(-112, 30.5));
-            track.push(new walk(-72, 33.2));
-            track.push(new walk(42, 37.5));
-            track.push(new walk(-98, 45.2));
-            track.push(new walk(0, 47));
-
-            // Dude mesh
-            BABYLON.SceneLoader.ImportMeshAsync("him", "./", "Dude3.babylon", scene).then((result) => {
-                var dude = result.meshes[0];
-                dude.scaling = new BABYLON.Vector3(0.012, 0.012, 0.012);
-                dude.position = new BABYLON.Vector3(-6, 0, 0);
-                dude.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(-95), BABYLON.Space.LOCAL);
-                const startRotation = dude.rotationQuaternion.clone();
-
-                scene.beginAnimation(result.skeletons[0], 0, 100, true, 1.0);
-
-                let distance = 0;
-                let step = 0.015;
-                let p = 0;
-
-                scene.onBeforeRenderObservable.add(() => {
-                    dude.movePOV(0, 0, step);
-                    distance += step;
-
-                    if (distance > track[p].dist) {
-                        dude.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(track[p].turn), BABYLON.Space.LOCAL);
-                        p += 1;
-                        p %= track.length;
-                        if (p === 0) {
-                            distance = 0;
-                            dude.position = new BABYLON.Vector3(-6, 0, 0);
-                            dude.rotationQuaternion = startRotation.clone();
-                        }
-                    }
-                });
-            });
-
-            // Create a sphere
-            var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {
-                diameter: 0.5, // diameter of the sphere
-                segments: 32, // number of segments
+            // Set up a ground (for water to be under it)
+            const ground = BABYLON.MeshBuilder.CreateGround("ground", {
+                width: 100,
+                height: 100,
+                subdivisions: 4
             }, scene);
 
-            // Position the sphere
-            sphere.position = new BABYLON.Vector3(0, 0, 6);
-            var material = new BABYLON.StandardMaterial("material", scene);
-            material.diffuseColor = new BABYLON.Color3(1, 0, 0); // red color
-            sphere.material = material;
-
-            // Create additional spheres
-            var sphereProperties = {
-                diameter: 2,
-                segments: 32,
-            };
-
-            var materials = [
-                new BABYLON.StandardMaterial("material1", scene),
-                new BABYLON.StandardMaterial("material2", scene),
-                new BABYLON.StandardMaterial("material3", scene),
-            ];
-
-            materials[0].diffuseColor = new BABYLON.Color3(1, 0, 0); // Red
-            materials[1].diffuseColor = new BABYLON.Color3(0, 1, 0); // Green
-            materials[2].diffuseColor = new BABYLON.Color3(0, 0, 1); // Blue
-
-            var positions = [
-                new BABYLON.Vector3(0, 0, 0),
-                new BABYLON.Vector3(0, 2, 0),
-                new BABYLON.Vector3(2, 0, 0),
-            ];
-
-            for (var i = 0; i < 3; i++) {
-                var sphere = BABYLON.MeshBuilder.CreateSphere("sphere" + i, sphereProperties, scene);
-                sphere.position = positions[i];
-                sphere.material = materials[i];
-            }
-
-            // Create water below ground
+            // Create water material
             const waterMaterial = new BABYLON.WaterMaterial("waterMaterial", scene);
             waterMaterial.bumpTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/waterbump.png", scene);
-            
-            // Set windForce, waveHeight, and waveLength to 0
+
+            // Set wave parameters to 0
             waterMaterial.windForce = 0;
             waterMaterial.waveHeight = 0;
             waterMaterial.waveLength = 0;
-            waterMaterial.waterColor = new BABYLON.Color3(0, 0, 1); // Blue water color
+            waterMaterial.waterColor = new BABYLON.Color3(0, 0, 1); // Blue color for water
 
+            // Create water mesh and apply the water material to it
             const waterMesh = BABYLON.MeshBuilder.CreateGround("water", {
                 width: 100,
                 height: 100,
                 subdivisions: 4
             }, scene);
-            waterMesh.position.y = -1; // Position the water below ground level
+            waterMesh.position.y = -1; // Move the water mesh below the ground
             waterMesh.material = waterMaterial;
+
+            // Create a basic sphere to test scene visibility
+            const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", { diameter: 2 }, scene);
+            sphere.position.y = 1; // Place it above the water
+
+            // Create a basic light for visibility
+            const sphereMaterial = new BABYLON.StandardMaterial("sphereMat", scene);
+            sphereMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0); // Red sphere
+            sphere.material = sphereMaterial;
 
             return scene;
         };
@@ -170,4 +86,3 @@
     </script>
 </body>
 </html>
-
