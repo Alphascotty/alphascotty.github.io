@@ -40,12 +40,12 @@
             });
 
             // Create a water surface over the outskirts of the village
-            const waterMesh = BABYLON.MeshBuilder.CreateGround("waterMesh", { width: 400, height: 40 }, scene);
+            const waterMesh = BABYLON.MeshBuilder.CreateGround("waterMesh", { width: 1000, height: 1000 }, scene);
             const waterMaterial = new BABYLON.StandardMaterial("waterMaterial", scene);
             waterMaterial.diffuseColor = new BABYLON.Color3(0, 0, 1); // Blue color to represent water
             waterMaterial.alpha = 0.5; // Semi-transparent
             waterMesh.material = waterMaterial;
-            waterMesh.position = new BABYLON.Vector3(7.5, -1, 7.5); // Position it to cover the outskirts
+            waterMesh.position = new BABYLON.Vector3(7.5, -0.5, 7.5); // Position it to cover the outskirts
 
             // Dude walking animation
             const walk = function (turn, dist) {
