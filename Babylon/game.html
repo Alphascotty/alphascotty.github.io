@@ -49,24 +49,30 @@ Here is the updated game.html file with walls of height 40 placed on the outskir
             waterMesh.material = waterMaterial;
             waterMesh.position = new BABYLON.Vector3(7.5, -0.1, 7.5); // Position it to cover the outskirts
 
-            // Create walls over the water
-            const wallMaterial = new BABYLON.StandardMaterial("wallMaterial", scene);
-            wallMaterial.diffuseTexture = new BABYLON.Texture("https://example.com/wood_texture.jpg", scene);
+            // Define the wall material
+const brownWallMaterial = new BABYLON.StandardMaterial("brownWallMaterial", scene);
+brownWallMaterial.diffuseColor = new BABYLON.Color3.FromHexString("#8B4513"); // Brown color
 
-            const createWall = function (position, rotation) {
-                const wall = BABYLON.MeshBuilder.CreateBox("wall", { width: 0.5, height: 40, depth: 1000 }, scene);
-                wall.position = position;
-                wall.rotation.y = rotation;
-                wall.material = wallMaterial;
-                return wall;
-            };
+// Function to create the wall
+const createBrownWall = function(position, rotation, width, height, depth) {
+    const wall = BABYLON.MeshBuilder.CreateBox("brownWall", { width: width, height: height, depth: depth }, scene);
+    wall.position = position;
+    wall.rotation.y = rotation;
+    wall.material = brownWallMaterial;
+    return wall;
+};
 
-            // Create walls on the outskirts
-            const northWall = createWall(new BABYLON.Vector3(7.5, 20, -500), 0);
-            const southWall = createWall(new BABYLON.Vector3(7.5, 20, 515), Math.PI);
-            const eastWall = createWall(new BABYLON.Vector3(500, 20, 7.5), Math.PI / 2);
-            const westWall = createWall(new BABYLON.Vector3(-500, 20, 7.5), -Math.PI / 2);
+// Create the brown walls around the village
+const villageBoundary = 40;
+const wallHeight = 15;
+const wallThickness = 0.5;
+const wallLength = villageBoundary * 2;
 
+const northWall = createBrownWall(new BABYLON.Vector3(0, wallHeight / 2, -villageBoundary), 0, wallLength, wallHeight, wallThickness);
+const southWall = createBrownWall(new BABYLON.Vector3(0, wallHeight / 2, villageBoundary), 0, wallLength, wallHeight, wallThickness);
+const eastWall = createBrownWall(new BABYLON.Vector3(villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
+const westWall = createBrownWall(new BABYLON.Vector3(-villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
+            
             // Dude walking animation
             const walk = function (turn, dist) {
                 this.turn = turn;
