@@ -72,16 +72,15 @@
             const wallThickness = 0.8;
             const wallLength = villageBoundary * 2;
 
-  
-// Create the brown walls around the village 
-const northWall = createBrownWall(new BABYLON.Vector3(0, wallHeight / 2, -villageBoundary), 0, wallLength, wallHeight, wallThickness);
-const southWall = createBrownWall(new BABYLON.Vector3(0, wallHeight / 2, villageBoundary), 0, wallLength, wallHeight, wallThickness);
-const eastWall = createBrownWall(new BABYLON.Vector3(villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
-const westWall = createBrownWall(new BABYLON.Vector3(-villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
+            // Create the brown walls around the village
+            const northWall = createBrownWall(new BABYLON.Vector3(0, wallHeight / 2, -villageBoundary), 0, wallLength, wallHeight, wallThickness);
+            const southWall = createBrownWall(new BABYLON.Vector3(0, wallHeight / 2, villageBoundary), 0, wallLength, wallHeight, wallThickness);
+            const eastWall = createBrownWall(new BABYLON.Vector3(villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
+            const westWall = createBrownWall(new BABYLON.Vector3(-villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
 
             // Create a rectangular hole in the middle of the north wall
-const northWallPart1 = createBrownWall(new BABYLON.Vector3(-villageBoundary / 2, wallHeight / 2, -villageBoundary), 0, wallLength / 3, wallHeight, wallThickness);
-const northWallPart2 = createBrownWall(new BABYLON.Vector3(villageBoundary / 2, wallHeight / 2, -villageBoundary), 0, wallLength / 3, wallHeight, wallThickness);
+            const northWallPart1 = createBrownWall(new BABYLON.Vector3(-villageBoundary / 2, wallHeight / 2, -villageBoundary), 0, wallLength / 3, wallHeight, wallThickness);
+            const northWallPart2 = createBrownWall(new BABYLON.Vector3(villageBoundary / 2, wallHeight / 2, -villageBoundary), 0, wallLength / 3, wallHeight, wallThickness);
 
             // Add towers at the corners of the walls
             const createTower = function(position) {
@@ -134,6 +133,12 @@ const northWallPart2 = createBrownWall(new BABYLON.Vector3(villageBoundary / 2, 
             cloudSystem.updateSpeed = 0.005;
 
             cloudSystem.start();
+
+            // Add the new BABYLON.SceneLoader.Append code snippet
+            BABYLON.SceneLoader.Append("./", "troll.glb", scene, function (newMeshes) {
+                newMeshes[0].scaling = new BABYLON.Vector3(0.00001, 0.00001, 0.00001);
+                newMeshes[0].position = new BABYLON.Vector3(1, 2, 0);
+            });
 
             return scene;
         };
