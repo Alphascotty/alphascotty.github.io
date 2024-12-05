@@ -88,6 +88,11 @@
                 const tower = BABYLON.MeshBuilder.CreateCylinder("tower", { diameter: 2, height: 10 }, scene);
                 tower.position = position;
                 tower.material = brownWallMaterial;
+                
+                // Add cone roof to the tower
+                const coneRoof = BABYLON.MeshBuilder.CreateCylinder("coneRoof", { diameterTop: 0, diameterBottom: 2, height: 3, tessellation: 16 }, scene);
+                coneRoof.position = new BABYLON.Vector3(position.x, position.y + 5.5, position.z);
+                coneRoof.material = brownWallMaterial; // You can change the material if needed
                 return tower;
             };
 
