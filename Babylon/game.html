@@ -49,7 +49,7 @@ Here is the updated game.html file with walls of height 40 placed on the outskir
             waterMesh.material = waterMaterial;
             waterMesh.position = new BABYLON.Vector3(7.5, -0.1, 7.5); // Position it to cover the outskirts
 
-            // Define the wall material
+// Define the wall material
 const brownWallMaterial = new BABYLON.StandardMaterial("brownWallMaterial", scene);
 brownWallMaterial.diffuseColor = new BABYLON.Color3.FromHexString("#8B4513"); // Brown color
 
@@ -62,17 +62,33 @@ const createBrownWall = function(position, rotation, width, height, depth) {
     return wall;
 };
 
-// Create the brown walls around the village
+// Define village boundary and wall properties
 const villageBoundary = 40;
 const wallHeight = 15;
 const wallThickness = 0.5;
 const wallLength = villageBoundary * 2;
 
+// Create the brown walls around the village
 const northWall = createBrownWall(new BABYLON.Vector3(0, wallHeight / 2, -villageBoundary), 0, wallLength, wallHeight, wallThickness);
 const southWall = createBrownWall(new BABYLON.Vector3(0, wallHeight / 2, villageBoundary), 0, wallLength, wallHeight, wallThickness);
 const eastWall = createBrownWall(new BABYLON.Vector3(villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
 const westWall = createBrownWall(new BABYLON.Vector3(-villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
-            
+
+// Adjust the village positions to be centered
+const villagePositions = [
+    new BABYLON.Vector3(-villageBoundary / 2, 0, -villageBoundary / 2),  // First village
+    new BABYLON.Vector3(villageBoundary / 2, 0, -villageBoundary / 2),   // Second village
+    new BABYLON.Vector3(-villageBoundary / 2, 0, villageBoundary / 2),   // Third village
+    new BABYLON.Vector3(villageBoundary / 2, 0, villageBoundary / 2)     // Fourth village
+];
+
+// Load four village models and position them accordingly
+villagePositions.forEach((position, index) => {
+    BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", "village.glb").then((result) => {
+        const village = result.meshes[0];
+        village.position = position; // Set the position for each village
+    });
+});        
             // Dude walking animation
             const walk = function (turn, dist) {
                 this.turn = turn;
