@@ -78,15 +78,15 @@
             const eastWall = createBrownWall(new BABYLON.Vector3(villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
             const westWall = createBrownWall(new BABYLON.Vector3(-villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
 
-            // Create thunder clouds
+            // Create thunder clouds with dark grey color
             const cloudSystem = new BABYLON.ParticleSystem("clouds", 800, scene);
             cloudSystem.particleTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/cloud.png", scene);
             cloudSystem.emitter = new BABYLON.Vector3(0, 20, 0);
             cloudSystem.minEmitBox = new BABYLON.Vector3(-50, 0, -50);
             cloudSystem.maxEmitBox = new BABYLON.Vector3(50, 0, 50);
 
-            cloudSystem.color1 = new BABYLON.Color4(0.9, 0.9, 0.9, 0.5);
-            cloudSystem.color2 = new BABYLON.Color4(0.9, 0.9, 0.9, 0.5);
+            cloudSystem.color1 = new BABYLON.Color4(0.3, 0.3, 0.3, 0.5); // Dark grey color
+            cloudSystem.color2 = new BABYLON.Color4(0.3, 0.3, 0.3, 0.5); // Dark grey color
 
             cloudSystem.minSize = 10.0;
             cloudSystem.maxSize = 20.0;
