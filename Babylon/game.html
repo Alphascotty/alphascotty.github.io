@@ -78,12 +78,12 @@
             const eastWall = createBrownWall(new BABYLON.Vector3(villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
             const westWall = createBrownWall(new BABYLON.Vector3(-villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
 
-            // Create thunder clouds with dark grey color
+            // Create thunder clouds with dark grey color and broader spawn location
             const cloudSystem = new BABYLON.ParticleSystem("clouds", 800, scene);
             cloudSystem.particleTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/cloud.png", scene);
             cloudSystem.emitter = new BABYLON.Vector3(0, 20, 0);
-            cloudSystem.minEmitBox = new BABYLON.Vector3(-50, 0, -50);
-            cloudSystem.maxEmitBox = new BABYLON.Vector3(50, 0, 50);
+            cloudSystem.minEmitBox = new BABYLON.Vector3(-100, 0, -100); // Broader spawn location
+            cloudSystem.maxEmitBox = new BABYLON.Vector3(100, 0, 100);   // Broader spawn location
 
             cloudSystem.color1 = new BABYLON.Color4(0.3, 0.3, 0.3, 0.5); // Dark grey color
             cloudSystem.color2 = new BABYLON.Color4(0.3, 0.3, 0.3, 0.5); // Dark grey color
@@ -111,6 +111,23 @@
             cloudSystem.updateSpeed = 0.005;
 
             cloudSystem.start();
+
+            // Add 6 ships positioned at least 8 units away from walls on surface of 0
+            const shipPositions = [
+                new BABYLON.Vector3(-villageBoundary + 10, 0, -villageBoundary + 10),
+                new BABYLON.Vector3(villageBoundary - 10, 0, -villageBoundary + 10),
+                new BABYLON.Vector3(-villageBoundary + 10, 0, villageBoundary - 10),
+                new BABYLON.Vector3(villageBoundary - 10, 0, villageBoundary - 10),
+                new BABYLON.Vector3(0, 0, -villageBoundary + 10),
+                new BABYLON.Vector3(0, 0, villageBoundary - 10)
+            ];
+
+            shipPositions.forEach((position, index) => {
+                BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", "boat.glb").then((result) => {
+                    const ship = result.meshes[0];
+                    ship.position = position; // Set the position for each ship
+                });
+            });
 
             // Dude walking animation
             const walk = function (turn, dist) {
