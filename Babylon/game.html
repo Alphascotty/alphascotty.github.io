@@ -78,6 +78,19 @@
             const eastWall = createBrownWall(new BABYLON.Vector3(villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
             const westWall = createBrownWall(new BABYLON.Vector3(-villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
 
+            // Add towers at the corners of the walls
+            const createTower = function(position) {
+                const tower = BABYLON.MeshBuilder.CreateCylinder("tower", { diameter: 2, height: 10 }, scene);
+                tower.position = position;
+                tower.material = brownWallMaterial;
+                return tower;
+            };
+
+            createTower(new BABYLON.Vector3(-villageBoundary, 5, -villageBoundary)); // Northwest corner
+            createTower(new BABYLON.Vector3(villageBoundary, 5, -villageBoundary));  // Northeast corner
+            createTower(new BABYLON.Vector3(-villageBoundary, 5, villageBoundary));  // Southwest corner
+            createTower(new BABYLON.Vector3(villageBoundary, 5, villageBoundary));   // Southeast corner
+
             // Create thunder clouds with dark grey color and broader spawn location
             const cloudSystem = new BABYLON.ParticleSystem("clouds", 800, scene);
             cloudSystem.particleTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/cloud.png", scene);
