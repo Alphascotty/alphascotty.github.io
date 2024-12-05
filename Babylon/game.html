@@ -25,10 +25,10 @@
 
             // Array to hold the positions of each village in the larger village map (2x2 grid)
             const villagePositions = [
-                new BABYLON.Vector3(0, 0, 0),          // First village at (0, 0, 0)
-                new BABYLON.Vector3(15, 0, 0),         // Second village at (15, 0, 0)
-                new BABYLON.Vector3(0, 0, 15),         // Third village at (0, 0, 15)
-                new BABYLON.Vector3(15, 0, 15),        // Fourth village at (15, 0, 15)
+                new BABYLON.Vector3(-20, 0, -20),      // First village
+                new BABYLON.Vector3(20, 0, -20),       // Second village
+                new BABYLON.Vector3(-20, 0, 20),       // Third village
+                new BABYLON.Vector3(20, 0, 20)         // Fourth village
             ];
 
             // Load four village models and position them accordingly
@@ -45,48 +45,33 @@
             waterMaterial.diffuseColor = new BABYLON.Color3(0, 0, 1); // Blue color to represent water
             waterMaterial.alpha = 0.5; // Semi-transparent
             waterMesh.material = waterMaterial;
-            waterMesh.position = new BABYLON.Vector3(7.5, -0.1, 7.5); // Position it to cover the outskirts
+            waterMesh.position = new BABYLON.Vector3(0, -0.1, 0); // Position it to cover the outskirts
 
-// Define the wall material
-const brownWallMaterial = new BABYLON.StandardMaterial("brownWallMaterial", scene);
-brownWallMaterial.diffuseColor = new BABYLON.Color3.FromHexString("#8B4513"); // Brown color
+            // Define the wall material
+            const brownWallMaterial = new BABYLON.StandardMaterial("brownWallMaterial", scene);
+            brownWallMaterial.diffuseColor = new BABYLON.Color3.FromHexString("#8B4513"); // Brown color
 
-// Function to create the wall
-const createBrownWall = function(position, rotation, width, height, depth) {
-    const wall = BABYLON.MeshBuilder.CreateBox("brownWall", { width: width, height: height, depth: depth }, scene);
-    wall.position = position;
-    wall.rotation.y = rotation;
-    wall.material = brownWallMaterial;
-    return wall;
-};
+            // Function to create the wall
+            const createBrownWall = function(position, rotation, width, height, depth) {
+                const wall = BABYLON.MeshBuilder.CreateBox("brownWall", { width: width, height: height, depth: depth }, scene);
+                wall.position = position;
+                wall.rotation.y = rotation;
+                wall.material = brownWallMaterial;
+                return wall;
+            };
 
-// Define village boundary and wall properties
-const villageBoundary = 40;
-const wallHeight = 15;
-const wallThickness = 0.5;
-const wallLength = villageBoundary * 2;
+            // Define village boundary and wall properties
+            const villageBoundary = 20;
+            const wallHeight = 15;
+            const wallThickness = 0.5;
+            const wallLength = villageBoundary * 2;
 
-// Create the brown walls around the village
-const northWall = createBrownWall(new BABYLON.Vector3(0, wallHeight / 2, -villageBoundary), 0, wallLength, wallHeight, wallThickness);
-const southWall = createBrownWall(new BABYLON.Vector3(0, wallHeight / 2, villageBoundary), 0, wallLength, wallHeight, wallThickness);
-const eastWall = createBrownWall(new BABYLON.Vector3(villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
-const westWall = createBrownWall(new BABYLON.Vector3(-villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
+            // Create the brown walls around the village
+            const northWall = createBrownWall(new BABYLON.Vector3(0, wallHeight / 2, -villageBoundary), 0, wallLength, wallHeight, wallThickness);
+            const southWall = createBrownWall(new BABYLON.Vector3(0, wallHeight / 2, villageBoundary), 0, wallLength, wallHeight, wallThickness);
+            const eastWall = createBrownWall(new BABYLON.Vector3(villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
+            const westWall = createBrownWall(new BABYLON.Vector3(-villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
 
-// Adjust the village positions to be centered
-const villagePositions = [
-    new BABYLON.Vector3(-villageBoundary / 2, 0, -villageBoundary / 2),  // First village
-    new BABYLON.Vector3(villageBoundary / 2, 0, -villageBoundary / 2),   // Second village
-    new BABYLON.Vector3(-villageBoundary / 2, 0, villageBoundary / 2),   // Third village
-    new BABYLON.Vector3(villageBoundary / 2, 0, villageBoundary / 2)     // Fourth village
-];
-
-// Load four village models and position them accordingly
-villagePositions.forEach((position, index) => {
-    BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", "village.glb").then((result) => {
-        const village = result.meshes[0];
-        village.position = position; // Set the position for each village
-    });
-});        
             // Dude walking animation
             const walk = function (turn, dist) {
                 this.turn = turn;
