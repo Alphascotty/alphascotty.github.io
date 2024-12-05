@@ -29,12 +29,12 @@
             camera.attachControl(canvas, true);
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
 
-            // Array to hold the positions of each village in the larger village map (adjacent positions)
+            // Array to hold the positions of each village in the larger village map (adjacent positions, centered within walls)
             const villagePositions = [
-                new BABYLON.Vector3(0, 0, 0),          // First village
-                new BABYLON.Vector3(15, 0, 0),         // Second village
-                new BABYLON.Vector3(0, 0, 15),         // Third village
-                new BABYLON.Vector3(15, 0, 15)         // Fourth village
+                new BABYLON.Vector3(-5, 0, -5),          // First village
+                new BABYLON.Vector3(5, 0, -5),           // Second village
+                new BABYLON.Vector3(-5, 0, 5),           // Third village
+                new BABYLON.Vector3(5, 0, 5)             // Fourth village
             ];
 
             // Load four village models and position them accordingly
