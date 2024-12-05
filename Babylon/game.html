@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Babylon.js Village</title>
+    <meta name="viewport" content="width: device-width, initial-scale=1.0">
+    <title>Babylon.js Village with Moving Ships</title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylon.glTF2FileLoader.js"></script>
     <script src="https://cdn.babylonjs.com/serializers/babylon.glTFSerializer.js"></script>
@@ -11,7 +11,7 @@
 </head>
 <body>
     <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
-    <button id="downloadButton" style="position: absolute; top: 20px; left: 20px; z-index: 10;">Download Stickman GLB</button>
+    <button id="downloadButton" style="position: absolute; top: 20px; left: 20px; z-index: 10;">Download GLB</button>
     
     <script>
         var canvas = document.getElementById("renderCanvas");
@@ -29,23 +29,7 @@
             camera.attachControl(canvas, true);
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0));
 
-            // Array to hold the positions of each village in the larger village map (adjacent positions, centered within walls)
-            const villagePositions = [
-                new BABYLON.Vector3(-5, 0, -5),          // First village
-                new BABYLON.Vector3(5, 0, -5),           // Second village
-                new BABYLON.Vector3(-5, 0, 5),           // Third village
-                new BABYLON.Vector3(5, 0, 5)             // Fourth village
-            ];
-
-            // Load four village models and position them accordingly
-            villagePositions.forEach((position, index) => {
-                BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", "village.glb").then((result) => {
-                    const village = result.meshes[0];
-                    village.position = position; // Set the position for each village
-                });
-            });
-
-            // Create a water surface over the outskirts of the village
+            // Create water surface over the outskirts of the village
             const waterMesh = BABYLON.MeshBuilder.CreateGround("waterMesh", { width: 1000, height: 1000 }, scene);
             const waterMaterial = new BABYLON.StandardMaterial("waterMaterial", scene);
             waterMaterial.diffuseColor = new BABYLON.Color3(0, 0, 1); // Blue color to represent water
@@ -68,7 +52,7 @@
 
             // Define village boundary and wall properties
             const villageBoundary = 20;
-            const wallHeight = 8;
+            const wallHeight = 6;
             const wallThickness = 0.8;
             const wallLength = villageBoundary * 2;
 
@@ -78,112 +62,58 @@
             const eastWall = createBrownWall(new BABYLON.Vector3(villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
             const westWall = createBrownWall(new BABYLON.Vector3(-villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
 
-            // Create thunder clouds with dark grey color and broader spawn location
-            const cloudSystem = new BABYLON.ParticleSystem("clouds", 800, scene);
-            cloudSystem.particleTexture = new BABYLON.Texture("https://www.babylonjs-playground.com/textures/cloud.png", scene);
-            cloudSystem.emitter = new BABYLON.Vector3(0, 20, 0);
-            cloudSystem.minEmitBox = new BABYLON.Vector3(-100, 0, -100); // Broader spawn location
-            cloudSystem.maxEmitBox = new BABYLON.Vector3(100, 0, 100);   // Broader spawn location
+            // Create a circular path for the ships to move around the village (around the walls)
+            const pathRadius = 30; // Radius of path around the village
+            const pathPoints = [];
+            for (let i = 0; i < 360; i++) {
+                let angle = BABYLON.Tools.ToRadians(i);
+                let x = pathRadius * Math.cos(angle);
+                let z = pathRadius * Math.sin(angle);
+                pathPoints.push(new BABYLON.Vector3(x, 0, z));
+            }
 
-            cloudSystem.color1 = new BABYLON.Color4(0.3, 0.3, 0.3, 0.5); // Dark grey color
-            cloudSystem.color2 = new BABYLON.Color4(0.3, 0.3, 0.3, 0.5); // Dark grey color
-
-            cloudSystem.minSize = 10.0;
-            cloudSystem.maxSize = 20.0;
-
-            cloudSystem.minLifeTime = 2.0;
-            cloudSystem.maxLifeTime = 3.0;
-
-            cloudSystem.emitRate = 10;
-
-            cloudSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;
-
-            cloudSystem.gravity = new BABYLON.Vector3(0, 0, 0);
-
-            cloudSystem.direction1 = new BABYLON.Vector3(-1, 0, 0);
-            cloudSystem.direction2 = new BABYLON.Vector3(1, 0, 0);
-
-            cloudSystem.minAngularSpeed = 0;
-            cloudSystem.maxAngularSpeed = Math.PI;
-
-            cloudSystem.minEmitPower = 1;
-            cloudSystem.maxEmitPower = 3;
-            cloudSystem.updateSpeed = 0.005;
-
-            cloudSystem.start();
-
-            // Add 6 ships positioned at least 8 units away from walls on surface of 0
-            const shipPositions = [
-                new BABYLON.Vector3(-villageBoundary + 10, 0, -villageBoundary + 10),
-                new BABYLON.Vector3(villageBoundary - 10, 0, -villageBoundary + 10),
-                new BABYLON.Vector3(-villageBoundary + 10, 0, villageBoundary - 10),
-                new BABYLON.Vector3(villageBoundary - 10, 0, villageBoundary - 10),
-                new BABYLON.Vector3(0, 0, -villageBoundary + 10),
-                new BABYLON.Vector3(0, 0, villageBoundary - 10)
-            ];
-
-            const boatModels = [
-                "boat.glb",
-                "dinghy.glb",
-                "yacht.glb",
-                "sailboat.glb"
-            ];
+            // Load and position the boats along the path
+            const boatModel = "boat.glb"; // Use a single boat model for all ships
+            const shipCount = 6;
+            const shipPositions = [];
+            for (let i = 0; i < shipCount; i++) {
+                const angle = (i * 360) / shipCount; // Evenly space boats on the circle
+                const position = new BABYLON.Vector3(pathRadius * Math.cos(BABYLON.Tools.ToRadians(angle)), 0, pathRadius * Math.sin(BABYLON.Tools.ToRadians(angle)));
+                shipPositions.push(position);
+            }
 
             shipPositions.forEach((position, index) => {
-                const randomModel = boatModels[Math.floor(Math.random() * boatModels.length)];
-                BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", randomModel).then((result) => {
+                BABYLON.SceneLoader.ImportMeshAsync("", "https://assets.babylonjs.com/meshes/", boatModel).then((result) => {
                     const ship = result.meshes[0];
-                    ship.position = position; // Set the position for each ship
-                });
-            });
+                    ship.position = position; // Set the initial position of each ship
 
-            // Dude walking animation
-            const walk = function (turn, dist) {
-                this.turn = turn;
-                this.dist = dist;
-            };
+                    // Create an animation for the ship to follow the path
+                    let animation = new BABYLON.Animation("shipAnimation", "position", 1, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+                    let keys = [];
 
-            const track = [];
-            track.push(new walk(86, 7));
-            track.push(new walk(-85, 14.8));
-            track.push(new walk(-93, 16.5));
-            track.push(new walk(48, 25.5));
-            track.push(new walk(-112, 30.5));
-            track.push(new walk(-72, 33.2));
-            track.push(new walk(42, 37.5));
-            track.push(new walk(-98, 45.2));
-            track.push(new walk(0, 47));
-
-            // Dude mesh
-            BABYLON.SceneLoader.ImportMeshAsync("him", "./", "Dude3.babylon", scene).then((result) => {
-                var dude = result.meshes[0];
-                dude.scaling = new BABYLON.Vector3(0.012, 0.012, 0.012);
-                dude.position = new BABYLON.Vector3(-6, 0, 0);
-                dude.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(-95), BABYLON.Space.LOCAL);
-                const startRotation = dude.rotationQuaternion.clone();
-
-                scene.beginAnimation(result.skeletons[0], 0, 100, true, 1.0);
-
-                let distance = 0;
-                let step = 0.015;
-                let p = 0;
-
-                scene.onBeforeRenderObservable.add(() => {
-                    dude.movePOV(0, 0, step);
-                    distance += step;
-
-                    if (distance > track[p].dist) {
-                        dude.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(track[p].turn), BABYLON.Space.LOCAL);
-                        p += 1;
-                        p %= track.length;
-                        if (p === 0) {
-                            distance = 0;
-                            dude.position = new BABYLON.Vector3(-6, 0, 0);
-                            dude.rotationQuaternion = startRotation.clone();
-                        }
+                    // Generate keyframes for moving along the circular path
+                    for (let j = 0; j < pathPoints.length; j++) {
+                        keys.push({
+                            frame: j,
+                            value: pathPoints[j]
+                        });
                     }
+
+                    animation.setKeys(keys);
+                    ship.animations.push(animation);
+                    scene.beginAnimation(ship, 0, pathPoints.length, true, 1.0);
                 });
             });
+
+            // Function to export as GLB
+            function exportToGLB() {
+                BABYLON.GLTF2Export.GLBAsync(scene, "village_with_ships.glb").then((glb) => {
+                    glb.downloadFiles();
+                });
+            }
+
+            // Attach export function to the download button
+            document.getElementById("downloadButton").addEventListener("click", exportToGLB);
 
             return scene;
         };
@@ -197,16 +127,6 @@
         window.addEventListener("resize", function () {
             engine.resize();
         });
-
-        // Function to export as GLB
-        function exportToGLB() {
-            BABYLON.GLTF2Export.GLBAsync(scene, "stickman.glb").then((glb) => {
-                glb.downloadFiles();
-            });
-        }
-
-        // Attach export function to the download button
-        document.getElementById("downloadButton").addEventListener("click", exportToGLB);
     </script>
 </body>
 </html>
