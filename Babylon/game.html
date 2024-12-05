@@ -72,8 +72,13 @@
             const wallThickness = 0.8;
             const wallLength = villageBoundary * 2;
 
-            // Create the brown walls around the village
-            const northWall = createBrownWall(new BABYLON.Vector3(0, wallHeight / 2, -villageBoundary), 0, wallLength, wallHeight, wallThickness);
+            // Create the brown walls around the village with a gate in the middle of the north wall
+            const northWallPart1 = createBrownWall(new BABYLON.Vector3(-villageBoundary / 2, wallHeight / 2, -villageBoundary), 0, wallLength / 2 - 2, wallHeight, wallThickness);
+            const northWallPart2 = createBrownWall(new BABYLON.Vector3(villageBoundary / 2, wallHeight / 2, -villageBoundary), 0, wallLength / 2 - 2, wallHeight, wallThickness);
+            const gate = BABYLON.MeshBuilder.CreateBox("gate", { width: 4, height: wallHeight, depth: wallThickness }, scene);
+            gate.position = new BABYLON.Vector3(0, wallHeight / 2, -villageBoundary);
+            gate.material = brownWallMaterial;
+
             const southWall = createBrownWall(new BABYLON.Vector3(0, wallHeight / 2, villageBoundary), 0, wallLength, wallHeight, wallThickness);
             const eastWall = createBrownWall(new BABYLON.Vector3(villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
             const westWall = createBrownWall(new BABYLON.Vector3(-villageBoundary, wallHeight / 2, 0), Math.PI / 2, wallLength, wallHeight, wallThickness);
