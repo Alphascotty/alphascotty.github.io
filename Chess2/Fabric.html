@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fabric.js Chessboard with Enhanced Features</title>
+    <title>Chess Game</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <style>
         canvas {
             border: 1px solid #000;
+            display: block;
+            margin: 0 auto;
         }
         #history {
             width: 400px;
@@ -21,6 +23,13 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
+            padding: 0 20px;
+        }
+        button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -29,8 +38,11 @@
         <div id="white-timer">White: 00:00</div>
         <div id="black-timer">Black: 00:00</div>
     </div>
+    <button onclick="startNewGame()">Start New Game</button>
+    <button onclick="resetGame()">Restart Game</button>
     <canvas id="canvas" width="400" height="400"></canvas>
     <div id="history"></div>
+    
     <script>
         const canvas = new fabric.Canvas('canvas');
         const squareSize = 50;
@@ -127,23 +139,24 @@
                                 selectable: true,
                                 pieceColor: piece === piece.toUpperCase() ? 'white' : 'black'
                             });
-                            
+
                             // Mouse event handlers
                             svgPiece.on('mousedown', function() {
-                                console.log(`Piece selected: ${piece}`);
                                 if ((turn === 'white' && this.pieceColor === 'white') || 
                                     (turn === 'black' && this.pieceColor === 'black')) {
                                     canvas.setActiveObject(this);
                                 }
                             });
+
                             svgPiece.on('mouseup', function() {
                                 const activeObject = canvas.getActiveObject();
                                 if (activeObject === this) {
                                     const fromPosition = coordsToPosition(this.left, this.top);
-                                    console.log(`Move from: ${fromPosition}`);
                                     alert(`Select destination square for ${piece} (current position: ${fromPosition})`);
+                                    speak(`Move ${piece} from ${fromPosition}`);
                                 }
                             });
+
                             canvas.add(svgPiece);
                         });
                     }
@@ -180,6 +193,7 @@
                 updateHistory(`${piece.pieceColor} moves from ${from} to ${to}`);
                 turn = turn === 'white' ? 'black' : 'white'; // Switch turns
                 startTimer(); // Restart timer for the next player
+                speak(`${piece.pieceColor} moves from ${from} to ${to}`);
             }
         }
 
@@ -192,14 +206,28 @@
             };
         }
 
-        window.addEventListener('keydown', function(event) {
-            if (event.key.match(/[a-h][1-8]/)) { // Check for valid square
-                const from = prompt("Enter the piece's current position (e.g., e2):");
-                if (from) {
-                    movePiece(from, event.key); // Move to the square indicated by the key
-                }
-            }
-        });
+        // Function to start a new game
+        function startNewGame() {
+            history.length = 0;
+            whiteTime = blackTime = 300; // Reset time
+            clearInterval(timerInterval);
+            createChessboard();
+            addPieces();
+            startTimer();
+            document.getElementById('history').innerHTML = '';
+            turn = 'white'; // White starts the game
+        }
+
+        // Function to reset the game
+        function resetGame() {
+            startNewGame();
+        }
+
+        // Speech synthesis for feedback
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            speechSynthesis.speak(utterance);
+        }
 
         createChessboard();
         addPieces();
@@ -207,3 +235,4 @@
     </script>
 </body>
 </html>
+
