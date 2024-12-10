@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -82,7 +81,7 @@
 
     // Add chess pieces to the board
     function addPieces() {
-        piecePositions.clear;
+        piecePositions = {}; // Reset piece positions
         for (let row = 0; row < 8; row++) {
             for (let col = 0; col < 8; col++) {
                 const piece = boardState[row][col];
@@ -98,25 +97,39 @@
                             selectable: true,
                             pieceColor: piece === piece.toUpperCase() ? 'white' : 'black'
                         });
+
+                        // Set initial piece positions
                         svgPiece.on('mousedown', function () {
                             if (turn === this.pieceColor) {
-                                this.set({opacity: 0.5, startLeft: this.left, startTop: this.top});
+                                this.set({ opacity: 0.5 });
+                                this.startLeft = this.left;
+                                this.startTop = this.top;
+                                this.startRow = Math.floor(this.top / squareSize);
+                                this.startCol = Math.floor(this.left / squareSize);
                                 canvas.setActiveObject(this);
                             }
                         });
+
+                        // Handle mouse up (release piece)
                         svgPiece.on('mouseup', function () {
                             if (canvas.getActiveObject() === this) {
-                                this.set({opacity: 1});
+                                this.set({ opacity: 1 });
+
                                 const newRow = Math.round(this.top / squareSize);
                                 const newCol = Math.round(this.left / squareSize);
+
+                                // Check if the move is valid
                                 if (isValidMove(this, newRow, newCol)) {
                                     piecePositions[newRow + '-' + newCol] = piecePositions[this.startRow + '-' + this.startCol];
                                     delete piecePositions[this.startRow + '-' + this.startCol];
+                                    
+                                    // Update the turn
                                     turn = turn === 'white' ? 'black' : 'white';
                                     updateTurnIndicator();
                                     playMoveSound();
                                     announceTurn();
                                 } else {
+                                    // If not valid, reset position
                                     this.left = this.startLeft;
                                     this.top = this.startTop;
                                     this.setCoords();
@@ -124,12 +137,15 @@
                                 }
                             }
                         });
+
+                        // Snap to grid while moving
                         svgPiece.on('moving', function () {
                             this.set({
                                 left: Math.round(this.left / squareSize) * squareSize + squareSize / 2,
                                 top: Math.round(this.top / squareSize) * squareSize + squareSize / 2
                             });
                         });
+
                         canvas.add(svgPiece);
                         piecePositions[row + '-' + col] = svgPiece;
                     });
@@ -250,3 +266,4 @@
 </script>
 </body>
 </html>
+
