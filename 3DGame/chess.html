@@ -64,7 +64,7 @@
                     piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.6, height: 1.3}, scene);
                     // Add a cone on top of the king
                     const cone = BABYLON.MeshBuilder.CreateCylinder(name + "_cone", {diameterTop: 0, diameterBottom: 0.3, height: 0.5}, scene);
-                    cone.position = new BABYLON.Vector3(0, 1.65, 0); // Adjust the position so it sits on top of the king
+                    cone.position = new BABYLON.Vector3(0, 0.6, 0); // Adjust the position so it sits on top of the king
                     cone.parent = piece; // Make the cone a child of the king
                     const coneMaterial = new BABYLON.StandardMaterial(name + "_coneMat", scene);
                     coneMaterial.diffuseColor = color.equals(new BABYLON.Color3(0, 0, 0)) ? new BABYLON.Color3(0, 0, 0) : new BABYLON.Color3(1, 1, 1);
