@@ -36,7 +36,8 @@
                     const tileMaterial = new BABYLON.StandardMaterial(`tileMat${row}_${col}`, scene);
                     tileMaterial.diffuseColor = (row + col) % 2 === 0 ? new BABYLON.Color3(1, 1, 1) : new BABYLON.Color3(0, 0, 0);
                     tile.material = tileMaterial;
-                    tile.isPickable = false; // Make tiles non-pickable for selection purposes
+                    tile.isPickable = true; // Allow tiles to be pickable
+                    tile.name = `tile${row}_${col}`;
                 }
             }
 
@@ -65,13 +66,9 @@
                     break;
                 case "king":
                     piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.6, height: 1.3}, scene);
-                    // Add a cone on top of the king
                     const cone = BABYLON.MeshBuilder.CreateCylinder(name + "_cone", {diameterTop: 0, diameterBottom: 0.3, height: 0.5}, scene);
-                    cone.position = new BABYLON.Vector3(0, 0.8, 0); // Adjust the position so it sits on top of the king
-                    cone.parent = piece; // Make the cone a child of the king
-                    const coneMaterial = new BABYLON.StandardMaterial(name + "_coneMat", scene);
-                    coneMaterial.diffuseColor = color.equals(new BABYLON.Color3(0, 0, 0)) ? new BABYLON.Color3(0, 0, 0) : new BABYLON.Color3(1, 1, 1);
-                    cone.material = coneMaterial;
+                    cone.position = new BABYLON.Vector3(0, 0.8, 0);
+                    cone.parent = piece;
                     break;
                 default:
                     piece = BABYLON.MeshBuilder.CreateBox(name, {size: 0.5}, scene);
@@ -85,10 +82,11 @@
             piece.actionManager = new BABYLON.ActionManager(scene);
             piece.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
                 selectedPiece = piece;
+                console.log("Piece selected: " + piece.name);
             }));
 
-            piece.name = name;  // Set the piece type for move validation
-            piece.color = color;  // Set the piece color for turn management
+            piece.name = name;
+            piece.color = color;
             return piece;
         };
 
@@ -126,7 +124,7 @@
 
         document.getElementById("startButton").addEventListener("click", () => {
             placePieces();
-            isWhiteTurn = true; // White's turn first
+            isWhiteTurn = true;
             console.log("Game Started! White's turn.");
         });
 
@@ -134,7 +132,7 @@
             pieces.forEach(piece => piece.dispose());
             pieces.length = 0;
             placePieces();
-            isWhiteTurn = true; // White's turn first
+            isWhiteTurn = true;
             console.log("Game Restarted! White's turn.");
         });
 
@@ -161,7 +159,8 @@
                 }
             } else if (pickResult.pickedMesh && pickResult.pickedMesh.color) {
                 const piece = pickResult.pickedMesh;
-                if ((isWhiteTurn && piece.color.equals(new BABYLON.Color3(1, 1, 1))) || (!isWhiteTurn && piece.color.equals(new BABYLON.Color3(0, 0, 0)))) {
+                if ((isWhiteTurn && piece.color.equals(new BABYLON.Color3(1, 1, 1))) || 
+                    (!isWhiteTurn && piece.color.equals(new BABYLON.Color3(0, 0, 0)))) {
                     selectedPiece = piece;
                     console.log("Selected piece", piece.name);
                 }
@@ -171,10 +170,11 @@
         const isValidMove = (piece, targetX, targetZ) => {
             const dx = Math.abs(piece.position.x - targetX);
             const dz = Math.abs(piece.position.z - targetZ);
-
+            console.log("Validating move", piece.name, dx, dz);
+            
             switch (piece.name) {
                 case "pawn":
-                    if (piece.color.equals(new BABYLON.Color3(1, 1, 1))) { // White pawn
+                    if (piece.color.equals(new BABYLON.Color3(1, 1, 1))) {
                         if (dz === 1 && dx === 0 && targetZ > piece.position.z) {
                             return true;
                         }
@@ -182,9 +182,9 @@
                             return true;
                         }
                         if (dz === 1 && dx === 1 && targetZ > piece.position.z) {
-                            return hasEnemyPiece(targetX, targetZ); // Capture diagonally
+                            return hasEnemyPiece(targetX, targetZ);
                         }
-                    } else { // Black pawn
+                    } else {
                         if (dz === 1 && dx === 0 && targetZ < piece.position.z) {
                             return true;
                         }
@@ -192,20 +192,20 @@
                             return true;
                         }
                         if (dz === 1 && dx === 1 && targetZ < piece.position.z) {
-                            return hasEnemyPiece(targetX, targetZ); // Capture diagonally
+                            return hasEnemyPiece(targetX, targetZ);
                         }
                     }
                     return false;
                 case "rook":
-                    return (dx === 0 || dz === 0) && !hasObstacle(piece.position.x, piece.position.z, targetX, targetZ); 
+                    return (dx === 0 || dz === 0) && !hasObstacle(piece.position.x, piece.position.z, targetX, targetZ);
                 case "knight":
-                    return (dx === 2 && dz === 1) || (dx === 1 && dz === 2); 
+                    return (dx === 2 && dz === 1) || (dx === 1 && dz === 2);
                 case "bishop":
-                    return dx === dz && !hasObstacle(piece.position.x, piece.position.z, targetX, targetZ); 
+                    return dx === dz && !hasObstacle(piece.position.x, piece.position.z, targetX, targetZ);
                 case "queen":
-                    return (dx === dz || dx === 0 || dz === 0) && !hasObstacle(piece.position.x, piece.position.z, targetX, targetZ); 
+                    return (dx === dz || dx === 0 || dz === 0) && !hasObstacle(piece.position.x, piece.position.z, targetX, targetZ);
                 case "king":
-                    return dx <= 1 && dz <= 1; 
+                    return dx <= 1 && dz <= 1;
                 default:
                     return false;
             }
@@ -253,4 +253,5 @@
     </script>
 </body>
 </html>
+
 
