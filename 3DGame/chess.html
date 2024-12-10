@@ -9,8 +9,9 @@
 <body>
     <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
     <button id="exportButton" style="position: absolute; top: 10px; left: 10px;">Export STL</button>
-    <button id="restartButton" style="position: absolute; top: 50px; left: 10px;">Restart Game</button>
-    <button id="startButton" style="position: absolute; top: 90px; left: 10px;">Start Game</button>
+    <button id="startButton" style="position: absolute; top: 50px; left: 10px;">Start</button>
+    <button id="restartButton" style="position: absolute; top: 90px; left: 10px;">Restart</button>
+
     <script>
         const canvas = document.getElementById("renderCanvas");
         const engine = new BABYLON.Engine(canvas, true);
@@ -31,9 +32,9 @@
 
             for (let row = 0; row < boardSize; row++) {
                 for (let col = 0; col < boardSize; col++) {
-                    const tile = BABYLON.MeshBuilder.CreateBox(`tile${row}_${col}`, {size: tileSize}, scene);
+                    const tile = BABYLON.MeshBuilder.CreateBox("tile" + row + "_" + col, {size: tileSize}, scene);
                     tile.position = new BABYLON.Vector3(row - boardSize / 2 + 0.5, 0, col - boardSize / 2 + 0.5);
-                    const tileMaterial = new BABYLON.StandardMaterial(`tileMat${row}_${col}`, scene);
+                    const tileMaterial = new BABYLON.StandardMaterial("tileMat" + row + "_" + col, scene);
                     tileMaterial.diffuseColor = (row + col) % 2 === 0 ? new BABYLON.Color3(1, 1, 1) : new BABYLON.Color3(0, 0, 0);
                     tile.material = tileMaterial;
                 }
@@ -48,22 +49,22 @@
             let piece;
             switch (name) {
                 case "pawn":
-                    piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.5, height: 1}, scene);
+                    piece = BABYLON.MeshBuilder.CreateSphere(name, {diameter: 0.5}, scene);
                     break;
                 case "rook":
-                    piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.5, height: 2}, scene);
+                    piece = BABYLON.MeshBuilder.CreateBox(name, {size: 0.5}, scene);
                     break;
                 case "knight":
-                    piece = BABYLON.MeshBuilder.CreateCone(name, {diameterTop: 0.5, diameterBottom: 1, height: 1.5}, scene);
+                    piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.5, height: 1}, scene);
                     break;
                 case "bishop":
-                    piece = BABYLON.MeshBuilder.CreateCone(name, {diameterTop: 0.5, diameterBottom: 1, height: 2}, scene);
+                    piece = BABYLON.MeshBuilder.CreateTorus(name, {diameter: 0.5, thickness: 0.15}, scene);
                     break;
                 case "queen":
-                    piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.6, height: 2}, scene);
+                    piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.6, height: 1.2}, scene);
                     break;
                 case "king":
-                    piece = BABYLON.MeshBuilder.CreateCone(name, {diameterTop: 0.6, diameterBottom: 1, height: 2}, scene);
+                    piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.6, height: 1.3}, scene);
                     break;
                 default:
                     piece = BABYLON.MeshBuilder.CreateBox(name, {size: 0.5}, scene);
@@ -76,63 +77,87 @@
 
             piece.actionManager = new BABYLON.ActionManager(scene);
             piece.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
-                selectedPiece = piece;
+                if (turn === "white" && color.equals(new BABYLON.Color3(1, 1, 1))) {
+                    selectedPiece = piece;
+                    console.log("White's turn");
+                } else if (turn === "black" && color.equals(new BABYLON.Color3(0, 0, 0))) {
+                    selectedPiece = piece;
+                    console.log("Black's turn");
+                }
             }));
 
             return piece;
         };
 
         let pieces = [];
-        let selectedPiece = null;
+        let turn = "white"; // Track whose turn it is
 
-        // Function to reset game pieces to starting positions
-        const resetGame = () => {
-            pieces.forEach(piece => piece.dispose());  // Remove all pieces
+        // Function to initialize pieces on the board
+        const setupPieces = () => {
             pieces = [];
-
             // Place pawns
             for (let i = 0; i < 8; i++) {
-                pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, 0.5), new BABYLON.Color3(1, 1, 1)));
-                pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, -0.5), new BABYLON.Color3(0, 0, 0)));
+                pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, 1.5), new BABYLON.Color3(1, 1, 1))); // White pawns
+                pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, -1.5), new BABYLON.Color3(0, 0, 0))); // Black pawns
             }
 
             // Place rooks
-            pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
-            pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
-            pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
-            pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
+            pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White rook
+            pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White rook
+            pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black rook
+            pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black rook
 
             // Place knights
-            pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
-            pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
-            pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
-            pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
+            pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White knight
+            pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White knight
+            pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black knight
+            pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black knight
 
             // Place bishops
-            pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
-            pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
-            pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
-            pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
+            pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White bishop
+            pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White bishop
+            pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black bishop
+            pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black bishop
 
             // Place queens
-            pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
-            pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
+            pieces.push(createPiece("queen", new BABYLON.Vector3(0.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1))); // White queen
+            pieces.push(createPiece("queen", new BABYLON.Vector3(0.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0))); // Black queen
 
             // Place kings
-            pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
-            pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
+            pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, 4.5), new BABYLON.Color3(1, 1, 1))); // White king
+            pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, -4.5), new BABYLON.Color3(0, 0, 0))); // Black king
         };
 
+        let selectedPiece = null;
+
+        // Handle the game logic on piece move
         scene.onPointerDown = (evt, pickResult) => {
             if (selectedPiece) {
                 const pickedTile = pickResult.pickedMesh;
                 if (pickedTile && pickedTile.name.startsWith("tile")) {
                     selectedPiece.position.x = pickedTile.position.x;
                     selectedPiece.position.z = pickedTile.position.z;
+                    turn = turn === "white" ? "black" : "white"; // Toggle turn
+                    console.log(turn + "'s turn");
                     selectedPiece = null;
                 }
             }
         };
+
+        // Start button: Initiate the game with white's turn
+        document.getElementById("startButton").addEventListener("click", () => {
+            setupPieces(); // Initialize the pieces
+            turn = "white"; // White starts
+            console.log("Game Started! White's turn");
+        });
+
+        // Restart button: Reset the game and set white's turn
+        document.getElementById("restartButton").addEventListener("click", () => {
+            pieces.forEach(piece => piece.dispose()); // Clear all pieces
+            setupPieces(); // Re-setup the pieces
+            turn = "white"; // Reset turn to white
+            console.log("Game Restarted! White's turn");
+        });
 
         document.getElementById("exportButton").addEventListener("click", () => {
             pieces.forEach(piece => {
@@ -146,9 +171,6 @@
             });
         });
 
-        document.getElementById("restartButton").addEventListener("click", resetGame);
-        document.getElementById("startButton").addEventListener("click", resetGame);
-
         engine.runRenderLoop(() => {
             scene.render();
         });
@@ -158,6 +180,8 @@
         });
     </script>
 </body>
+</html>
+
 </html>
 
 
