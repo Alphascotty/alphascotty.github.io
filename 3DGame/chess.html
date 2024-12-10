@@ -9,6 +9,8 @@
 <body>
     <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
     <button id="exportButton" style="position: absolute; top: 10px; left: 10px;">Export STL</button>
+    <button id="startButton" style="position: absolute; top: 10px; left: 100px;">Start Game</button>
+    <button id="restartButton" style="position: absolute; top: 10px; left: 200px;">Restart Game</button>
     <script>
         const canvas = document.getElementById("renderCanvas");
         const engine = new BABYLON.Engine(canvas, true);
@@ -91,33 +93,47 @@
 
         const pieces = [];
         
-        // Place white pieces
-        const whiteColor = new BABYLON.Color3(1, 1, 1);
-        for (let i = 0; i < 8; i++) {
-            pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, 2.5), whiteColor));
-        }
-        pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, 3.5), whiteColor));
-        pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, 3.5), whiteColor));
-        pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, 3.5), whiteColor));
-        pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, 3.5), whiteColor));
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, 3.5), whiteColor));
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, 3.5), whiteColor));
-        pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, 3.5), whiteColor));
-        pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, 3.5), whiteColor));
+        const placePieces = () => {
+            // Place white pieces
+            const whiteColor = new BABYLON.Color3(1, 1, 1);
+            for (let i = 0; i < 8; i++) {
+                pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, 2.5), whiteColor));
+            }
+            pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, 3.5), whiteColor));
+            pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, 3.5), whiteColor));
+            pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, 3.5), whiteColor));
+            pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, 3.5), whiteColor));
+            pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, 3.5), whiteColor));
+            pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, 3.5), whiteColor));
+            pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, 3.5), whiteColor));
+            pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, 3.5), whiteColor));
 
-        // Place black pieces
-        const blackColor = new BABYLON.Color3(0, 0, 0);
-        for (let i = 0; i < 8; i++) {
-            pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, -2.5), blackColor));
-        }
-        pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, -3.5), blackColor));
-        pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, -3.5), blackColor));
-        pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, -3.5), blackColor));
-        pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, -3.5), blackColor));
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, -3.5), blackColor));
-        pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, -3.5), blackColor));
-        pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, -3.5), blackColor));
-        pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, -3.5), blackColor));
+            // Place black pieces
+            const blackColor = new BABYLON.Color3(0, 0, 0);
+            for (let i = 0; i < 8; i++) {
+                pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, -2.5), blackColor));
+            }
+            pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, -3.5), blackColor));
+            pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, -3.5), blackColor));
+            pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, -3.5), blackColor));
+            pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, -3.5), blackColor));
+            pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, -3.5), blackColor));
+            pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, -3.5), blackColor));
+            pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, -3.5), blackColor));
+            pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, -3.5), blackColor));
+        };
+
+        document.getElementById("startButton").addEventListener("click", () => {
+            placePieces();
+            isWhiteTurn = true; // White's turn first
+        });
+
+        document.getElementById("restartButton").addEventListener("click", () => {
+            pieces.forEach(piece => piece.dispose());
+            pieces.length = 0;
+            placePieces();
+            isWhiteTurn = true; // White's turn first
+        });
 
         let selectedPiece = null;
         let isWhiteTurn = true;
@@ -138,40 +154,40 @@
                 }
             } else if (pickResult.pickedMesh && pickResult.pickedMesh.color) {
                 const piece = pickResult.pickedMesh;
-                if ((isWhiteTurn && piece.color.equals(whiteColor)) || (!isWhiteTurn && piece.color.equals(blackColor))) {
+                if ((isWhiteTurn && piece.color.equals(new BABYLON.Color3(1, 1, 1))) || (!isWhiteTurn && piece.color.equals(new BABYLON.Color3(0, 0, 0)))) {
                     selectedPiece = piece;
                 }
             }
         };
 
- const isValidMove = (piece, targetX, targetZ) => {
-    const dx = Math.abs(piece.position.x - targetX);
-    const dz = Math.abs(piece.position.z - targetZ);
+        const isValidMove = (piece, targetX, targetZ) => {
+            const dx = Math.abs(piece.position.x - targetX);
+            const dz = Math.abs(piece.position.z - targetZ);
 
-    switch (piece.name) {
-        case "pawn":
-            // Pawns move forward one square, or two squares on their first move
-            if (piece.color.equals(new BABYLON.Color3(1, 1, 1))) { // White pawn
-                return (dz === 1 && dx === 0 && targetZ > piece.position.z) ||
-                       (dz === 2 && dx === 0 && piece.position.z === 2.5 && targetZ === 4.5);
-            } else { // Black pawn
-                return (dz === 1 && dx === 0 && targetZ < piece.position.z) ||
-                       (dz === 2 && dx === 0 && piece.position.z === -2.5 && targetZ === -4.5);
+            switch (piece.name) {
+                case "pawn":
+                    // Pawns move forward one square, or two squares on their first move
+                    if (piece.color.equals(new BABYLON.Color3(1, 1, 1))) { // White pawn
+                        return (dz === 1 && dx === 0 && targetZ > piece.position.z) ||
+                               (dz === 2 && dx === 0 && piece.position.z === 2.5 && targetZ === 4.5);
+                    } else { // Black pawn
+                        return (dz === 1 && dx === 0 && targetZ < piece.position.z) ||
+                               (dz === 2 && dx === 0 && piece.position.z === -2.5 && targetZ === -4.5);
+                    }
+                case "rook":
+                    return dx === 0 || dz === 0;  // Move straight line
+                case "knight":
+                    return (dx === 2 && dz === 1) || (dx === 1 && dz === 2);  // L-shape move
+                case "bishop":
+                    return dx === dz;  // Diagonal move
+                case "queen":
+                    return dx === dz || dx === 0 || dz === 0;  // Diagonal or straight move
+                case "king":
+                    return dx <= 1 && dz <= 1;  // One square any direction
+                default:
+                    return false;
             }
-        case "rook":
-            return dx === 0 || dz === 0;  // Move straight line
-        case "knight":
-            return (dx === 2 && dz === 1) || (dx === 1 && dz === 2);  // L-shape move
-        case "bishop":
-            return dx === dz;  // Diagonal move
-        case "queen":
-            return dx === dz || dx === 0 || dz === 0;  // Diagonal or straight move
-        case "king":
-            return dx <= 1 && dz <= 1;  // One square any direction
-        default:
-            return false;
-    }
-};
+        };
 
         document.getElementById("exportButton").addEventListener("click", () => {
             pieces.forEach(piece => {
