@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Babylon.js Chessboard with STL Export and Rules</title>
+    <title>Babylon.js Chessboard with STL Export</title>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="https://cdn.babylonjs.com/stlExporter/babylon.stlExporter.min.js"></script>
@@ -9,8 +9,8 @@
 <body>
     <canvas id="renderCanvas" style="width: 100%; height: 100%;"></canvas>
     <button id="exportButton" style="position: absolute; top: 10px; left: 10px;">Export STL</button>
-    <button id="startButton" style="position: absolute; top: 10px; left: 100px;">Start Game</button>
-    <button id="restartButton" style="position: absolute; top: 10px; left: 200px;">Restart Game</button>
+    <button id="restartButton" style="position: absolute; top: 50px; left: 10px;">Restart Game</button>
+    <button id="startButton" style="position: absolute; top: 90px; left: 10px;">Start Game</button>
     <script>
         const canvas = document.getElementById("renderCanvas");
         const engine = new BABYLON.Engine(canvas, true);
@@ -36,8 +36,6 @@
                     const tileMaterial = new BABYLON.StandardMaterial(`tileMat${row}_${col}`, scene);
                     tileMaterial.diffuseColor = (row + col) % 2 === 0 ? new BABYLON.Color3(1, 1, 1) : new BABYLON.Color3(0, 0, 0);
                     tile.material = tileMaterial;
-                    tile.isPickable = true; // Allow tiles to be pickable
-                    tile.name = `tile${row}_${col}`;
                 }
             }
 
@@ -50,25 +48,22 @@
             let piece;
             switch (name) {
                 case "pawn":
-                    piece = BABYLON.MeshBuilder.CreateSphere(name, {diameter: 0.5}, scene);
-                    break;
-                case "rook":
-                    piece = BABYLON.MeshBuilder.CreateBox(name, {size: 0.5}, scene);
-                    break;
-                case "knight":
                     piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.5, height: 1}, scene);
                     break;
+                case "rook":
+                    piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.5, height: 2}, scene);
+                    break;
+                case "knight":
+                    piece = BABYLON.MeshBuilder.CreateCone(name, {diameterTop: 0.5, diameterBottom: 1, height: 1.5}, scene);
+                    break;
                 case "bishop":
-                    piece = BABYLON.MeshBuilder.CreateTorus(name, {diameter: 0.5, thickness: 0.15}, scene);
+                    piece = BABYLON.MeshBuilder.CreateCone(name, {diameterTop: 0.5, diameterBottom: 1, height: 2}, scene);
                     break;
                 case "queen":
-                    piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.6, height: 1.2}, scene);
+                    piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.6, height: 2}, scene);
                     break;
                 case "king":
-                    piece = BABYLON.MeshBuilder.CreateCylinder(name, {diameter: 0.6, height: 1.3}, scene);
-                    const cone = BABYLON.MeshBuilder.CreateCylinder(name + "_cone", {diameterTop: 0, diameterBottom: 0.3, height: 0.5}, scene);
-                    cone.position = new BABYLON.Vector3(0, 0.8, 0);
-                    cone.parent = piece;
+                    piece = BABYLON.MeshBuilder.CreateCone(name, {diameterTop: 0.6, diameterBottom: 1, height: 2}, scene);
                     break;
                 default:
                     piece = BABYLON.MeshBuilder.CreateBox(name, {size: 0.5}, scene);
@@ -82,166 +77,77 @@
             piece.actionManager = new BABYLON.ActionManager(scene);
             piece.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
                 selectedPiece = piece;
-                console.log("Piece selected: " + piece.name);
             }));
 
-            piece.name = name;
-            piece.color = color;
             return piece;
         };
 
-        const pieces = [];
-        
-        const placePieces = () => {
-            // Place white pieces
-            const whiteColor = new BABYLON.Color3(1, 1, 1);
-            for (let i = 0; i < 8; i++) {
-                pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, 2.5), whiteColor));
-            }
-            pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, 3.5), whiteColor));
-            pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, 3.5), whiteColor));
-            pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, 3.5), whiteColor));
-            pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, 3.5), whiteColor));
-            pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, 3.5), whiteColor));
-            pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, 3.5), whiteColor));
-            pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, 3.5), whiteColor));
-            pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, 3.5), whiteColor));
-
-            // Place black pieces
-            const blackColor = new BABYLON.Color3(0, 0, 0);
-            for (let i = 0; i < 8; i++) {
-                pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, -2.5), blackColor));
-            }
-            pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, -3.5), blackColor));
-            pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, -3.5), blackColor));
-            pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, -3.5), blackColor));
-            pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, -3.5), blackColor));
-            pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, -3.5), blackColor));
-            pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, -3.5), blackColor));
-            pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, -3.5), blackColor));
-            pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, -3.5), blackColor));
-        };
-
-        document.getElementById("startButton").addEventListener("click", () => {
-            placePieces();
-            isWhiteTurn = true;
-            console.log("Game Started! White's turn.");
-        });
-
-        document.getElementById("restartButton").addEventListener("click", () => {
-            pieces.forEach(piece => piece.dispose());
-            pieces.length = 0;
-            placePieces();
-            isWhiteTurn = true;
-            console.log("Game Restarted! White's turn.");
-        });
-
+        let pieces = [];
         let selectedPiece = null;
-        let isWhiteTurn = true;
+
+        // Function to reset game pieces to starting positions
+        const resetGame = () => {
+            pieces.forEach(piece => piece.dispose());  // Remove all pieces
+            pieces = [];
+
+            // Place pawns
+            for (let i = 0; i < 8; i++) {
+                pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, 0.5), new BABYLON.Color3(1, 1, 1)));
+                pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, -0.5), new BABYLON.Color3(0, 0, 0)));
+            }
+
+            // Place rooks
+            pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
+            pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
+            pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
+            pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
+
+            // Place knights
+            pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
+            pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
+            pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
+            pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
+
+            // Place bishops
+            pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
+            pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
+            pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
+            pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
+
+            // Place queens
+            pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
+            pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
+
+            // Place kings
+            pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
+            pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, -3.5), new BABYLON.Color3(0, 0, 0)));
+        };
 
         scene.onPointerDown = (evt, pickResult) => {
             if (selectedPiece) {
                 const pickedTile = pickResult.pickedMesh;
                 if (pickedTile && pickedTile.name.startsWith("tile")) {
-                    const targetX = pickedTile.position.x;
-                    const targetZ = pickedTile.position.z;
-                    console.log("Attempting to move piece", selectedPiece.name, "to", targetX, targetZ);
-
-                    if (isValidMove(selectedPiece, targetX, targetZ)) {
-                        selectedPiece.position.x = targetX;
-                        selectedPiece.position.z = targetZ;
-                        console.log("Moved piece to new position", targetX, targetZ);
-                        selectedPiece = null;
-                        isWhiteTurn = !isWhiteTurn;
-                    } else {
-                        console.log("Invalid move");
-                    }
-                }
-            } else if (pickResult.pickedMesh && pickResult.pickedMesh.color) {
-                const piece = pickResult.pickedMesh;
-                if ((isWhiteTurn && piece.color.equals(new BABYLON.Color3(1, 1, 1))) || 
-                    (!isWhiteTurn && piece.color.equals(new BABYLON.Color3(0, 0, 0)))) {
-                    selectedPiece = piece;
-                    console.log("Selected piece", piece.name);
+                    selectedPiece.position.x = pickedTile.position.x;
+                    selectedPiece.position.z = pickedTile.position.z;
+                    selectedPiece = null;
                 }
             }
-        };
-
-        const isValidMove = (piece, targetX, targetZ) => {
-            const dx = Math.abs(piece.position.x - targetX);
-            const dz = Math.abs(piece.position.z - targetZ);
-            console.log("Validating move", piece.name, dx, dz);
-            
-            switch (piece.name) {
-                case "pawn":
-                    if (piece.color.equals(new BABYLON.Color3(1, 1, 1))) {
-                        if (dz === 1 && dx === 0 && targetZ > piece.position.z) {
-                            return true;
-                        }
-                        if (dz === 2 && dx === 0 && piece.position.z === 2.5 && targetZ === 4.5) {
-                            return true;
-                        }
-                        if (dz === 1 && dx === 1 && targetZ > piece.position.z) {
-                            return hasEnemyPiece(targetX, targetZ);
-                        }
-                    } else {
-                        if (dz === 1 && dx === 0 && targetZ < piece.position.z) {
-                            return true;
-                        }
-                        if (dz === 2 && dx === 0 && piece.position.z === -2.5 && targetZ === -4.5) {
-                            return true;
-                        }
-                        if (dz === 1 && dx === 1 && targetZ < piece.position.z) {
-                            return hasEnemyPiece(targetX, targetZ);
-                        }
-                    }
-                    return false;
-                case "rook":
-                    return (dx === 0 || dz === 0) && !hasObstacle(piece.position.x, piece.position.z, targetX, targetZ);
-                case "knight":
-                    return (dx === 2 && dz === 1) || (dx === 1 && dz === 2);
-                case "bishop":
-                    return dx === dz && !hasObstacle(piece.position.x, piece.position.z, targetX, targetZ);
-                case "queen":
-                    return (dx === dz || dx === 0 || dz === 0) && !hasObstacle(piece.position.x, piece.position.z, targetX, targetZ);
-                case "king":
-                    return dx <= 1 && dz <= 1;
-                default:
-                    return false;
-            }
-        };
-
-        const hasEnemyPiece = (x, z) => {
-            return pieces.some(piece => piece.position.x === x && piece.position.z === z && piece.color !== selectedPiece.color);
-        };
-
-        const hasObstacle = (x1, z1, x2, z2) => {
-            const stepX = Math.sign(x2 - x1);
-            const stepZ = Math.sign(z2 - z1);
-            let x = x1 + stepX;
-            let z = z1 + stepZ;
-            while (x !== x2 || z !== z2) {
-                if (pieces.some(piece => piece.position.x === x && piece.position.z === z)) {
-                    return true;
-                }
-                x += stepX;
-                z += stepZ;
-            }
-            return false;
         };
 
         document.getElementById("exportButton").addEventListener("click", () => {
             pieces.forEach(piece => {
-                const stlString = BABYLON.StlExport.AsciiExport(scene, [piece]);
+                const stlString = BABYLON.STLExport.CreateSTL(scene, false, piece);
                 const blob = new Blob([stlString], { type: 'application/octet-stream' });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = 'chess_piece.stl';
+                link.download = `${piece.name}.stl`;
                 link.click();
-                URL.revokeObjectURL(url);
             });
         });
+
+        document.getElementById("restartButton").addEventListener("click", resetGame);
+        document.getElementById("startButton").addEventListener("click", resetGame);
 
         engine.runRenderLoop(() => {
             scene.render();
