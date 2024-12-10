@@ -36,6 +36,7 @@
                     const tileMaterial = new BABYLON.StandardMaterial(`tileMat${row}_${col}`, scene);
                     tileMaterial.diffuseColor = (row + col) % 2 === 0 ? new BABYLON.Color3(1, 1, 1) : new BABYLON.Color3(0, 0, 0);
                     tile.material = tileMaterial;
+                    tile.isPickable = false; // Make tiles non-pickable for selection purposes
                 }
             }
 
@@ -244,4 +245,5 @@
     </script>
 </body>
 </html>
+
 
