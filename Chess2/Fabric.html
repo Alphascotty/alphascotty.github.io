@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -99,7 +100,7 @@
                         });
                         svgPiece.on('mousedown', function () {
                             if (turn === this.pieceColor) {
-                                this.set({opacity: 0.5});
+                                this.set({opacity: 0.5, startLeft: this.left, startTop: this.top});
                                 canvas.setActiveObject(this);
                             }
                         });
@@ -109,6 +110,8 @@
                                 const newRow = Math.round(this.top / squareSize);
                                 const newCol = Math.round(this.left / squareSize);
                                 if (isValidMove(this, newRow, newCol)) {
+                                    piecePositions[newRow + '-' + newCol] = piecePositions[this.startRow + '-' + this.startCol];
+                                    delete piecePositions[this.startRow + '-' + this.startCol];
                                     turn = turn === 'white' ? 'black' : 'white';
                                     updateTurnIndicator();
                                     playMoveSound();
@@ -122,8 +125,6 @@
                             }
                         });
                         svgPiece.on('moving', function () {
-                            this.startLeft = this.left;
-                            this.startTop = this.top;
                             this.set({
                                 left: Math.round(this.left / squareSize) * squareSize + squareSize / 2,
                                 top: Math.round(this.top / squareSize) * squareSize + squareSize / 2
@@ -144,7 +145,6 @@
 
     // Valid move functions for each piece type
     function isValidMove(piece, newRow, newCol) {
-        // Get the piece type (e.g., 'P' for white pawn, 'r' for black rook)
         const pieceType = piece.pieceColor === 'white' ? piece.charAt(0).toUpperCase() : piece.charAt(0).toLowerCase();
         switch (pieceType) {
             case 'p':
@@ -165,53 +165,45 @@
     }
 
     function isValidPawnMove(piece, newRow, newCol) {
-        // Implement pawn move logic here
-        // Example: Pawns can move forward one square, or two squares if they haven't moved yet
         const direction = piece.pieceColor === 'white' ? -1 : 1;
         const startRow = piece.pieceColor === 'white' ? 6 : 1;
-        const validMove = (newRow === piece.startTop + direction) && (newCol === piece.startLeft);
-        const validDoubleMove = (newRow === piece.startTop + 2 * direction) && (newCol === piece.startLeft) && (piece.startTop === startRow);
-        const validCapture = (newRow === piece.startTop + direction) && (Math.abs(newCol - piece.startLeft) === 1);
+        const validMove = (newRow === piece.startRow + direction) && (newCol === piece.startCol);
+        const validDoubleMove = (newRow === piece.startRow + 2 * direction) && (newCol === piece.startCol) && (piece.startRow === startRow);
+        const validCapture = (newRow === piece.startRow + direction) && (Math.abs(newCol - piece.startCol) === 1);
         return validMove || validDoubleMove || validCapture;
     }
 
     function isValidRookMove(piece, newRow, newCol) {
-        // Implement rook move logic here
-        const validMove = (newRow === piece.startTop) || (newCol === piece.startLeft);
+        const validMove = (newRow === piece.startRow) || (newCol === piece.startCol);
         return validMove && clearPath(piece, newRow, newCol);
     }
 
     function isValidKnightMove(piece, newRow, newCol) {
-        // Implement knight move logic here
-        const validMove = (Math.abs(newRow - piece.startTop) === 2 && Math.abs(newCol - piece.startLeft) === 1) ||
-            (Math.abs(newRow - piece.startTop) === 1 && Math.abs(newCol - piece.startLeft) === 2);
+        const validMove = (Math.abs(newRow - piece.startRow) === 2 && Math.abs(newCol - piece.startCol) === 1) ||
+            (Math.abs(newRow - piece.startRow) === 1 && Math.abs(newCol - piece.startCol) === 2);
         return validMove;
     }
 
     function isValidBishopMove(piece, newRow, newCol) {
-        // Implement bishop move logic here
-        const validMove = Math.abs(newRow - piece.startTop) === Math.abs(newCol - piece.startLeft);
+        const validMove = Math.abs(newRow - piece.startRow) === Math.abs(newCol - piece.startCol);
         return validMove && clearPath(piece, newRow, newCol);
     }
 
     function isValidQueenMove(piece, newRow, newCol) {
-        // Implement queen move logic here
-        const validMove = (newRow === piece.startTop) || (newCol === piece.startLeft) || (Math.abs(newRow - piece.startTop) === Math.abs(newCol - piece.startLeft));
+        const validMove = (newRow === piece.startRow) || (newCol === piece.startCol) || (Math.abs(newRow - piece.startRow) === Math.abs(newCol - piece.startCol));
         return validMove && clearPath(piece, newRow, newCol);
     }
 
     function isValidKingMove(piece, newRow, newCol) {
-        // Implement king move logic here
-        const validMove = Math.abs(newRow - piece.startTop) <= 1 && Math.abs(newCol - piece.startLeft) <= 1;
+        const validMove = Math.abs(newRow - piece.startRow) <= 1 && Math.abs(newCol - piece.startCol) <= 1;
         return validMove;
     }
 
     function clearPath(piece, newRow, newCol) {
-        // Implement logic to check if the path is clear for rook, bishop, and queen
-        const dRow = Math.sign(newRow - piece.startTop);
-        const dCol = Math.sign(newCol - piece.startLeft);
-        let row = piece.startTop + dRow;
-        let col = piece.startLeft + dCol;
+        const dRow = Math.sign(newRow - piece.startRow);
+        const dCol = Math.sign(newCol - piece.startCol);
+        let row = piece.startRow + dRow;
+        let col = piece.startCol + dCol;
         while (row !== newRow || col !== newCol) {
             if (piecePositions[row + '-' + col]) {
                 return false;
