@@ -224,7 +224,7 @@
 
         document.getElementById("exportButton").addEventListener("click", () => {
             pieces.forEach(piece => {
-                const stlString = BABYLON.STLExport.CreateSTL(scene, false, piece);
+                const stlString = BABYLON.StlExport.AsciiExport(scene, [piece]);
                 const blob = new Blob([stlString], { type: 'application/octet-stream' });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
@@ -244,3 +244,4 @@
     </script>
 </body>
 </html>
+
