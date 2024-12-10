@@ -144,27 +144,34 @@
             }
         };
 
-        const isValidMove = (piece, targetX, targetZ) => {
-            const dx = Math.abs(piece.position.x - targetX);
-            const dz = Math.abs(piece.position.z - targetZ);
+ const isValidMove = (piece, targetX, targetZ) => {
+    const dx = Math.abs(piece.position.x - targetX);
+    const dz = Math.abs(piece.position.z - targetZ);
 
-            switch (piece.name) {
-                case "pawn":
-                    return dz === 1 && dx === 0;  // Only move forward by one square
-                case "rook":
-                    return dx === 0 || dz === 0;  // Move straight line
-                case "knight":
-                    return (dx === 2 && dz === 1) || (dx === 1 && dz === 2);  // L-shape move
-                case "bishop":
-                    return dx === dz;  // Diagonal move
-                case "queen":
-                    return dx === dz || dx === 0 || dz === 0;  // Diagonal or straight move
-                case "king":
-                    return dx <= 1 && dz <= 1;  // One square any direction
-                default:
-                    return false;
+    switch (piece.name) {
+        case "pawn":
+            // Pawns move forward one square, or two squares on their first move
+            if (piece.color.equals(new BABYLON.Color3(1, 1, 1))) { // White pawn
+                return (dz === 1 && dx === 0 && targetZ > piece.position.z) ||
+                       (dz === 2 && dx === 0 && piece.position.z === 2.5 && targetZ === 4.5);
+            } else { // Black pawn
+                return (dz === 1 && dx === 0 && targetZ < piece.position.z) ||
+                       (dz === 2 && dx === 0 && piece.position.z === -2.5 && targetZ === -4.5);
             }
-        };
+        case "rook":
+            return dx === 0 || dz === 0;  // Move straight line
+        case "knight":
+            return (dx === 2 && dz === 1) || (dx === 1 && dz === 2);  // L-shape move
+        case "bishop":
+            return dx === dz;  // Diagonal move
+        case "queen":
+            return dx === dz || dx === 0 || dz === 0;  // Diagonal or straight move
+        case "king":
+            return dx <= 1 && dz <= 1;  // One square any direction
+        default:
+            return false;
+    }
+};
 
         document.getElementById("exportButton").addEventListener("click", () => {
             pieces.forEach(piece => {
