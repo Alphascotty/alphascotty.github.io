@@ -21,170 +21,240 @@
 </head>
 <body>
 
-    <div id="hud">
-        <div id="turnIndicator">Turn: White</div>
-        <button id="startBtn">Start Game</button>
-        <button id="restartBtn">Restart Game</button>
-    </div>
+<div id="hud">
+    <div id="turnIndicator">Turn: White</div>
+    <button id="startBtn">Start Game</button>
+    <button id="restartBtn">Restart Game</button>
+</div>
 
-    <canvas id="canvas" width="400" height="400"></canvas>
-    
-    <script>
-        const canvas = new fabric.Canvas('canvas');
-        const squareSize = 50;
-        let turn = 'white';
-        const piecePositions = {}; // For basic move validation
-        const pieces = {
-            'r': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
-            'n': 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
-            'b': 'https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg',
-            'q': 'https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg',
-            'k': 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg',
-            'p': 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg',
-            'R': 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg',
-            'N': 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg',
-            'B': 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg',
-            'Q': 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg',
-            'K': 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg',
-            'P': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg'
-        };
+<canvas id="canvas" width="400" height="400"></canvas>
 
-        const boardState = [
-            ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
-            ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['.', '.', '.', '.', '.', '.', '.', '.'],
-            ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
-            ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
-        ];
+<script>
+    const canvas = new fabric.Canvas('canvas');
+    const squareSize = 50;
+    let turn = 'white';
+    const piecePositions = {}; // For basic move validation
+    const pieces = {
+        'r': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
+        'n': 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
+        'b': 'https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg',
+        'q': 'https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg',
+        'k': 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg',
+        'p': 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg',
+        'R': 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg',
+        'N': 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg',
+        'B': 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg',
+        'Q': 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg',
+        'K': 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg',
+        'P': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg'
+    };
 
-        // Create the chessboard
-        function createChessboard() {
-            canvas.clear(); // Reset canvas
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 8; col++) {
-                    const isLightSquare = (row + col) % 2 === 0;
-                    const square = new fabric.Rect({
-                        left: col * squareSize,
-                        top: row * squareSize,
-                        fill: isLightSquare ? '#eee' : '#8B4513',
-                        width: squareSize,
-                        height: squareSize,
-                        selectable: false
-                    });
-                    canvas.add(square);
-                }
+    const boardState = [
+        ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+        ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+        ['.', '.', '.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.', '.', '.'],
+        ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+        ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
+    ];
+
+    // Create the chessboard
+    function createChessboard() {
+        canvas.clear(); // Reset canvas
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 8; col++) {
+                const isLightSquare = (row + col) % 2 === 0;
+                const square = new fabric.Rect({
+                    left: col * squareSize,
+                    top: row * squareSize,
+                    fill: isLightSquare ? '#eee' : '#8B4513',
+                    width: squareSize,
+                    height: squareSize,
+                    selectable: false
+                });
+                canvas.add(square);
             }
         }
+    }
 
-        // Add chess pieces to the board
-        function addPieces() {
-            piecePositions.clear;
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 8; col++) {
-                    const piece = boardState[row][col];
-                    if (piece !== '.') {
-                        fabric.loadSVGFromURL(pieces[piece], function(objects, options) {
-                            const svgPiece = fabric.util.groupSVGElements(objects, options);
-                            svgPiece.set({
-                                left: col * squareSize + squareSize / 2,
-                                top: row * squareSize + squareSize / 2,
-                                originX: 'center',
-                                originY: 'center',
-                                hasControls: false,
-                                selectable: true,
-                                pieceColor: piece === piece.toUpperCase() ? 'white' : 'black'
-                            });
-                            svgPiece.on('mousedown', function() {
-                                if (turn === this.pieceColor) {
-                                    this.set({ opacity: 0.5 });
-                                    canvas.setActiveObject(this);
-                                }
-                            });
-                            svgPiece.on('mouseup', function() {
-                                if (canvas.getActiveObject() === this) {
-                                    this.set({ opacity: 1 });
-                                    const newRow = Math.round(this.top / squareSize);
-                                    const newCol = Math.round(this.left / squareSize);
-                                    if (isValidMove(this, newRow, newCol)) {
-                                        turn = turn === 'white' ? 'black' : 'white';
-                                        updateTurnIndicator();
-                                        playMoveSound();
-                                        announceTurn();
-                                    } else {
-                                        this.left = this.startLeft;
-                                        this.top = this.startTop;
-                                        this.setCoords();
-                                        canvas.renderAll();
-                                    }
-                                }
-                            });
-                            svgPiece.on('moving', function() {
-                                this.startLeft = this.left;
-                                this.startTop = this.top;
-                                this.set({
-                                    left: Math.round(this.left / squareSize) * squareSize + squareSize / 2,
-                                    top: Math.round(this.top / squareSize) * squareSize + squareSize / 2
-                                });
-                            });
-                            canvas.add(svgPiece);
-                            piecePositions[row + '-' + col] = svgPiece;
+    // Add chess pieces to the board
+    function addPieces() {
+        piecePositions.clear;
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 8; col++) {
+                const piece = boardState[row][col];
+                if (piece !== '.') {
+                    fabric.loadSVGFromURL(pieces[piece], function (objects, options) {
+                        const svgPiece = fabric.util.groupSVGElements(objects, options);
+                        svgPiece.set({
+                            left: col * squareSize + squareSize / 2,
+                            top: row * squareSize + squareSize / 2,
+                            originX: 'center',
+                            originY: 'center',
+                            hasControls: false,
+                            selectable: true,
+                            pieceColor: piece === piece.toUpperCase() ? 'white' : 'black'
                         });
-                    }
+                        svgPiece.on('mousedown', function () {
+                            if (turn === this.pieceColor) {
+                                this.set({opacity: 0.5});
+                                canvas.setActiveObject(this);
+                            }
+                        });
+                        svgPiece.on('mouseup', function () {
+                            if (canvas.getActiveObject() === this) {
+                                this.set({opacity: 1});
+                                const newRow = Math.round(this.top / squareSize);
+                                const newCol = Math.round(this.left / squareSize);
+                                if (isValidMove(this, newRow, newCol)) {
+                                    turn = turn === 'white' ? 'black' : 'white';
+                                    updateTurnIndicator();
+                                    playMoveSound();
+                                    announceTurn();
+                                } else {
+                                    this.left = this.startLeft;
+                                    this.top = this.startTop;
+                                    this.setCoords();
+                                    canvas.renderAll();
+                                }
+                            }
+                        });
+                        svgPiece.on('moving', function () {
+                            this.startLeft = this.left;
+                            this.startTop = this.top;
+                            this.set({
+                                left: Math.round(this.left / squareSize) * squareSize + squareSize / 2,
+                                top: Math.round(this.top / squareSize) * squareSize + squareSize / 2
+                            });
+                        });
+                        canvas.add(svgPiece);
+                        piecePositions[row + '-' + col] = svgPiece;
+                    });
                 }
             }
         }
+    }
 
-        // Update the turn indicator
-        function updateTurnIndicator() {
-            document.getElementById('turnIndicator').innerText = `Turn: ${turn.charAt(0).toUpperCase() + turn.slice(1)}`;
+    // Update the turn indicator
+    function updateTurnIndicator() {
+        document.getElementById('turnIndicator').innerText = `Turn: ${turn.charAt(0).toUpperCase() + turn.slice(1)}`;
+    }
+
+    // Valid move functions for each piece type
+    function isValidMove(piece, newRow, newCol) {
+        // Get the piece type (e.g., 'P' for white pawn, 'r' for black rook)
+        const pieceType = piece.pieceColor === 'white' ? piece.charAt(0).toUpperCase() : piece.charAt(0).toLowerCase();
+        switch (pieceType) {
+            case 'p':
+                return isValidPawnMove(piece, newRow, newCol);
+            case 'r':
+                return isValidRookMove(piece, newRow, newCol);
+            case 'n':
+                return isValidKnightMove(piece, newRow, newCol);
+            case 'b':
+                return isValidBishopMove(piece, newRow, newCol);
+            case 'q':
+                return isValidQueenMove(piece, newRow, newCol);
+            case 'k':
+                return isValidKingMove(piece, newRow, newCol);
+            default:
+                return false;
         }
+    }
 
-        // Basic move validation (not complete, just prevents moving into same color pieces)
-        function isValidMove(piece, newRow, newCol) {
-            const targetKey = newRow + '-' + newCol;
-            if (piecePositions[targetKey]) {
-                return piece.pieceColor !== piecePositions[targetKey].pieceColor;
+    function isValidPawnMove(piece, newRow, newCol) {
+        // Implement pawn move logic here
+        // Example: Pawns can move forward one square, or two squares if they haven't moved yet
+        const direction = piece.pieceColor === 'white' ? -1 : 1;
+        const startRow = piece.pieceColor === 'white' ? 6 : 1;
+        const validMove = (newRow === piece.startTop + direction) && (newCol === piece.startLeft);
+        const validDoubleMove = (newRow === piece.startTop + 2 * direction) && (newCol === piece.startLeft) && (piece.startTop === startRow);
+        const validCapture = (newRow === piece.startTop + direction) && (Math.abs(newCol - piece.startLeft) === 1);
+        return validMove || validDoubleMove || validCapture;
+    }
+
+    function isValidRookMove(piece, newRow, newCol) {
+        // Implement rook move logic here
+        const validMove = (newRow === piece.startTop) || (newCol === piece.startLeft);
+        return validMove && clearPath(piece, newRow, newCol);
+    }
+
+    function isValidKnightMove(piece, newRow, newCol) {
+        // Implement knight move logic here
+        const validMove = (Math.abs(newRow - piece.startTop) === 2 && Math.abs(newCol - piece.startLeft) === 1) ||
+            (Math.abs(newRow - piece.startTop) === 1 && Math.abs(newCol - piece.startLeft) === 2);
+        return validMove;
+    }
+
+    function isValidBishopMove(piece, newRow, newCol) {
+        // Implement bishop move logic here
+        const validMove = Math.abs(newRow - piece.startTop) === Math.abs(newCol - piece.startLeft);
+        return validMove && clearPath(piece, newRow, newCol);
+    }
+
+    function isValidQueenMove(piece, newRow, newCol) {
+        // Implement queen move logic here
+        const validMove = (newRow === piece.startTop) || (newCol === piece.startLeft) || (Math.abs(newRow - piece.startTop) === Math.abs(newCol - piece.startLeft));
+        return validMove && clearPath(piece, newRow, newCol);
+    }
+
+    function isValidKingMove(piece, newRow, newCol) {
+        // Implement king move logic here
+        const validMove = Math.abs(newRow - piece.startTop) <= 1 && Math.abs(newCol - piece.startLeft) <= 1;
+        return validMove;
+    }
+
+    function clearPath(piece, newRow, newCol) {
+        // Implement logic to check if the path is clear for rook, bishop, and queen
+        const dRow = Math.sign(newRow - piece.startTop);
+        const dCol = Math.sign(newCol - piece.startLeft);
+        let row = piece.startTop + dRow;
+        let col = piece.startLeft + dCol;
+        while (row !== newRow || col !== newCol) {
+            if (piecePositions[row + '-' + col]) {
+                return false;
             }
-            return true;
+            row += dRow;
+            col += dCol;
         }
+        return true;
+    }
 
-        // Text-to-Speech for announcing the current player's turn
-        function announceTurn() {
-            const message = `${turn.charAt(0).toUpperCase() + turn.slice(1)}'s turn`;
-            const utterance = new SpeechSynthesisUtterance(message);
-            speechSynthesis.speak(utterance);
-        }
+    // Text-to-Speech for announcing the current player's turn
+    function announceTurn() {
+        const message = `${turn.charAt(0).toUpperCase() + turn.slice(1)}'s turn`;
+        const utterance = new SpeechSynthesisUtterance(message);
+        speechSynthesis.speak(utterance);
+    }
 
-        // Play move sound
-        function playMoveSound() {
-            const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
-            audio.play();
-        }
+    // Play move sound
+    function playMoveSound() {
+        const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
+        audio.play();
+    }
 
-        // Start game
-        function startGame() {
-            createChessboard();
-            addPieces();
-            turn = 'white';
-            updateTurnIndicator();
-            announceTurn();
-        }
+    // Start game
+    function startGame() {
+        createChessboard();
+        addPieces();
+        turn = 'white';
+        updateTurnIndicator();
+        announceTurn();
+    }
 
-        // Restart game
-        function restartGame() {
-            startGame();
-        }
-
-        // Add event listeners for Start and Restart buttons
-        document.getElementById('startBtn').addEventListener('click', startGame);
-        document.getElementById('restartBtn').addEventListener('click', restartGame);
-
-        // Initialize game
+    // Restart game
+    function restartGame() {
         startGame();
-    </script>
+    }
+
+    // Add event listeners for Start and Restart buttons
+    document.getElementById('startBtn').addEventListener('click', startGame);
+    document.getElementById('restartBtn').addEventListener('click', restartGame);
+
+    // Initialize game
+    startGame();
+</script>
 </body>
 </html>
-
