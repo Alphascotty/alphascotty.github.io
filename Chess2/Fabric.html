@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Game</title>
+    <title>Chessboard with Logic and Features</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <style>
         canvas {
             border: 1px solid #000;
-            display: block;
-            margin: 0 auto;
         }
         #history {
             width: 400px;
@@ -23,13 +21,6 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
-            padding: 0 20px;
-        }
-        button {
-            padding: 10px;
-            margin: 10px;
-            font-size: 16px;
-            cursor: pointer;
         }
     </style>
 </head>
@@ -38,45 +29,38 @@
         <div id="white-timer">White: 00:00</div>
         <div id="black-timer">Black: 00:00</div>
     </div>
-    <button onclick="startNewGame()">Start New Game</button>
-    <button onclick="resetGame()">Restart Game</button>
     <canvas id="canvas" width="400" height="400"></canvas>
     <div id="history"></div>
-    
+
     <script>
         const canvas = new fabric.Canvas('canvas');
         const squareSize = 50;
-        let turn = 'white';
         const history = [];
-        let whiteTime = 300; // 5 minutes
-        let blackTime = 300; // 5 minutes
+        let whiteTime = 300;
+        let blackTime = 300;
         let timerInterval;
+        let turn = 'white'; // White starts
+        let gameOver = false;
+        let piecesOnBoard = []; // Store all pieces as fabric objects
+        let selectedSquare = null;
+        let isWhiteTurn = true;
+        let promotionSquare = null;
 
-        // Initialize the timers
-        function startTimer() {
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                if (turn === 'white') {
-                    whiteTime--;
-                    updateTimerDisplay('white');
-                } else {
-                    blackTime--;
-                    updateTimerDisplay('black');
-                }
-            }, 1000);
-        }
-
-        function updateTimerDisplay(color) {
-            const timerElement = document.getElementById(`${color}-timer`);
-            const time = color === 'white' ? whiteTime : blackTime;
-            const minutes = String(Math.floor(time / 60)).padStart(2, '0');
-            const seconds = String(time % 60).padStart(2, '0');
-            timerElement.innerText = `${color.charAt(0).toUpperCase() + color.slice(1)}: ${minutes}:${seconds}`;
-            if (time <= 0) {
-                clearInterval(timerInterval);
-                alert(`${color.charAt(0).toUpperCase() + color.slice(1)} time's up!`);
-            }
-        }
+        // Game pieces setup (simplified)
+        const pieces = {
+            'r': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
+            'n': 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
+            'b': 'https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg',
+            'q': 'https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg',
+            'k': 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg',
+            'p': 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg',
+            'R': 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg',
+            'N': 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg',
+            'B': 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg',
+            'Q': 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg',
+            'K': 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg',
+            'P': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg'
+        };
 
         // Create the chessboard
         function createChessboard() {
@@ -96,23 +80,8 @@
             }
         }
 
-        // Load SVG pieces onto the chessboard
+        // Load pieces on the board
         function addPieces() {
-            const pieces = {
-                'r': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
-                'n': 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
-                'b': 'https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg',
-                'q': 'https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg',
-                'k': 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg',
-                'p': 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg',
-                'R': 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg',
-                'N': 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg',
-                'B': 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg',
-                'Q': 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg',
-                'K': 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg',
-                'P': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg'
-            };
-
             const boardState = [
                 ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
                 ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
@@ -137,13 +106,12 @@
                                 originY: 'center',
                                 hasControls: false,
                                 selectable: true,
-                                pieceColor: piece === piece.toUpperCase() ? 'white' : 'black'
+                                pieceColor: piece === piece.toUpperCase() ? 'white' : 'black',
+                                pieceType: piece // Store piece type (e.g., 'r', 'N', etc.)
                             });
 
-                            // Mouse event handlers
                             svgPiece.on('mousedown', function() {
-                                if ((turn === 'white' && this.pieceColor === 'white') || 
-                                    (turn === 'black' && this.pieceColor === 'black')) {
+                                if ((turn === 'white' && this.pieceColor === 'white') || (turn === 'black' && this.pieceColor === 'black')) {
                                     canvas.setActiveObject(this);
                                 }
                             });
@@ -153,11 +121,11 @@
                                 if (activeObject === this) {
                                     const fromPosition = coordsToPosition(this.left, this.top);
                                     alert(`Select destination square for ${piece} (current position: ${fromPosition})`);
-                                    speak(`Move ${piece} from ${fromPosition}`);
                                 }
                             });
 
                             canvas.add(svgPiece);
+                            piecesOnBoard.push(svgPiece); // Track the piece on the board
                         });
                     }
                 }
@@ -170,33 +138,6 @@
             return String.fromCharCode(col + 'a'.charCodeAt(0)) + row;
         }
 
-        function updateHistory(move) {
-            history.push(move);
-            const historyDiv = document.getElementById('history');
-            historyDiv.innerHTML = history.join('<br/>');
-        }
-
-        function movePiece(from, to) {
-            const piece = canvas.getActiveObject();
-            if (!piece) return;
-
-            const fromCoords = positionToCoords(from);
-            const toCoords = positionToCoords(to);
-
-            if (piece && piece.left === fromCoords.x && piece.top === fromCoords.y) {
-                piece.set({
-                    left: toCoords.x,
-                    top: toCoords.y,
-                });
-                piece.setCoords();
-                canvas.renderAll();
-                updateHistory(`${piece.pieceColor} moves from ${from} to ${to}`);
-                turn = turn === 'white' ? 'black' : 'white'; // Switch turns
-                startTimer(); // Restart timer for the next player
-                speak(`${piece.pieceColor} moves from ${from} to ${to}`);
-            }
-        }
-
         function positionToCoords(position) {
             const col = position.charCodeAt(0) - 'a'.charCodeAt(0);
             const row = 8 - parseInt(position[1]);
@@ -206,24 +147,66 @@
             };
         }
 
-        // Function to start a new game
-        function startNewGame() {
-            history.length = 0;
-            whiteTime = blackTime = 300; // Reset time
-            clearInterval(timerInterval);
-            createChessboard();
-            addPieces();
-            startTimer();
-            document.getElementById('history').innerHTML = '';
-            turn = 'white'; // White starts the game
+        // Basic validation of moves
+        function isValidMove(piece, startRow, startCol, endRow, endCol) {
+            const dx = endRow - startRow;
+            const dy = endCol - startCol;
+            const absDx = Math.abs(dx);
+            const absDy = Math.abs(dy);
+
+            if (game[endRow][endCol] && 
+                ((piece === piece.toUpperCase() && game[endRow][endCol] === game[endRow][endCol].toUpperCase()) ||
+                 (piece === piece.toLowerCase() && game[endRow][endCol] === game[endRow][endCol].toLowerCase()))) {
+                return false; // Can't capture own piece
+            }
+
+            switch (piece.toLowerCase()) {
+                case 'p': 
+                    if (piece === 'P') {
+                        if (dy === 0 && dx === -1 && !game[endRow][endCol]) return true;
+                        if (startRow === 6 && dy === 0 && dx === -2 && !game[endRow][endCol] && !game[endRow + 1][endCol]) return true;
+                        if (absDy === 1 && dx === -1 && game[endRow][endCol]) return true;
+                    } else if (piece === 'p') {
+                        if (dy === 0 && dx === 1 && !game[endRow][endCol]) return true;
+                        if (startRow === 1 && dy === 0 && dx === 2 && !game[endRow][endCol] && !game[endRow - 1][endCol]) return true;
+                        if (absDy === 1 && dx === 1 && game[endRow][endCol]) return true;
+                    }
+                    break;
+                case 'r':
+                    if ((dx === 0 || dy === 0) && clearPath(startRow, startCol, endRow, endCol)) return true;
+                    break;
+                case 'n':
+                    if ((absDx === 2 && absDy === 1) || (absDx === 1 && absDy === 2)) return true;
+                    break;
+                case 'b':
+                    if (absDx === absDy && clearPath(startRow, startCol, endRow, endCol)) return true;
+                    break;
+                case 'q':
+                    if ((dx === 0 || dy === 0 || absDx === absDy) && clearPath(startRow, startCol, endRow, endCol)) return true;
+                    break;
+                case 'k':
+                    if (absDx <= 1 && absDy <= 1) return true;
+                    break;
+                default:
+                    return false;
+            }
+            return false;
         }
 
-        // Function to reset the game
-        function resetGame() {
-            startNewGame();
+        function clearPath(startRow, startCol, endRow, endCol) {
+            const stepRow = endRow > startRow ? 1 : endRow < startRow ? -1 : 0;
+            const stepCol = endCol > startCol ? 1 : endCol < startCol ? -1 : 0;
+            let currentRow = startRow + stepRow;
+            let currentCol = startCol + stepCol;
+
+            while (currentRow !== endRow || currentCol !== endCol) {
+                if (game[currentRow][currentCol]) return false;
+                currentRow += stepRow;
+                currentCol += stepCol;
+            }
+            return true;
         }
 
-        // Speech synthesis for feedback
         function speak(text) {
             const utterance = new SpeechSynthesisUtterance(text);
             speechSynthesis.speak(utterance);
@@ -231,7 +214,6 @@
 
         createChessboard();
         addPieces();
-        startTimer();
     </script>
 </body>
 </html>
