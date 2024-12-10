@@ -3,267 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fabric.js Chessboard with Moveable Pieces</title>
+    <title>Fabric.js Chessboard with Enhanced Features</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <style>
         canvas {
             border: 1px solid #000;
+        }
+        #history {
+            width: 400px;
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #000;
+            margin-top: 10px;
+            padding: 5px;
         }
         #hud {
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
         }
-        #turnIndicator {
-            font-size: 18px;
-        }
     </style>
 </head>
 <body>
+    <div id="hud">
+        <div id="white-timer">White: 00:00</div>
+        <div id="black-timer">Black: 00:00</div>
+    </div>
+    <canvas id="canvas" width="400" height="400"></canvas>
+    <div id="history"></div>
+    <script>
+        const canvas = new fabric.Canvas('canvas');
+        const squareSize = 50;
+        let turn = 'white';
+        const history = [];
+        let whiteTime = 300; // 5 minutes
+        let blackTime = 300; // 5 minutes
+        let timerInterval;
 
-<div id="hud">
-    <div id="turnIndicator">Turn: White</div>
-    <button id="startBtn">Start Game</button>
-    <button id="restartBtn">Restart Game</button>
-</div>
+        // Initialize the timers
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (turn === 'white') {
+                    whiteTime--;
+                    updateTimerDisplay('white');
+                } else {
+                    blackTime--;
+                    updateTimerDisplay('black');
+                }
+            }, 1000);
+        }
 
-<canvas id="canvas" width="400" height="400"></canvas>
-
-<script>
-    const canvas = new fabric.Canvas('canvas');
-    const squareSize = 50;
-    let turn = 'white';
-    const piecePositions = {}; // For basic move validation
-    const pieces = {
-        'r': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
-        'n': 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
-        'b': 'https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg',
-        'q': 'https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg',
-        'k': 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg',
-        'p': 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg',
-        'R': 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg',
-        'N': 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg',
-        'B': 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg',
-        'Q': 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg',
-        'K': 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg',
-        'P': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg'
-    };
-
-    const boardState = [
-        ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
-        ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
-        ['.', '.', '.', '.', '.', '.', '.', '.'],
-        ['.', '.', '.', '.', '.', '.', '.', '.'],
-        ['.', '.', '.', '.', '.', '.', '.', '.'],
-        ['.', '.', '.', '.', '.', '.', '.', '.'],
-        ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
-        ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
-    ];
-
-    // Create the chessboard
-    function createChessboard() {
-        canvas.clear(); // Reset canvas
-        for (let row = 0; row < 8; row++) {
-            for (let col = 0; col < 8; col++) {
-                const isLightSquare = (row + col) % 2 === 0;
-                const square = new fabric.Rect({
-                    left: col * squareSize,
-                    top: row * squareSize,
-                    fill: isLightSquare ? '#eee' : '#8B4513',
-                    width: squareSize,
-                    height: squareSize,
-                    selectable: false
-                });
-                canvas.add(square);
+        function updateTimerDisplay(color) {
+            const timerElement = document.getElementById(`${color}-timer`);
+            const time = color === 'white' ? whiteTime : blackTime;
+            const minutes = String(Math.floor(time / 60)).padStart(2, '0');
+            const seconds = String(time % 60).padStart(2, '0');
+            timerElement.innerText = `${color.charAt(0).toUpperCase() + color.slice(1)}: ${minutes}:${seconds}`;
+            if (time <= 0) {
+                clearInterval(timerInterval);
+                alert(`${color.charAt(0).toUpperCase() + color.slice(1)} time's up!`);
             }
         }
-    }
 
-    // Add chess pieces to the board
-    function addPieces() {
-        piecePositions = {}; // Reset piece positions
-        for (let row = 0; row < 8; row++) {
-            for (let col = 0; col < 8; col++) {
-                const piece = boardState[row][col];
-                if (piece !== '.') {
-                    fabric.loadSVGFromURL(pieces[piece], function (objects, options) {
-                        const svgPiece = fabric.util.groupSVGElements(objects, options);
-                        svgPiece.set({
-                            left: col * squareSize + squareSize / 2,
-                            top: row * squareSize + squareSize / 2,
-                            originX: 'center',
-                            originY: 'center',
-                            hasControls: false,
-                            selectable: true,
-                            pieceColor: piece === piece.toUpperCase() ? 'white' : 'black'
-                        });
-
-                        // Set initial piece positions
-                        svgPiece.on('mousedown', function () {
-                            if (turn === this.pieceColor) {
-                                this.set({ opacity: 0.5 });
-                                this.startLeft = this.left;
-                                this.startTop = this.top;
-                                this.startRow = Math.floor(this.top / squareSize);
-                                this.startCol = Math.floor(this.left / squareSize);
-                                canvas.setActiveObject(this);
-                            }
-                        });
-
-                        // Handle mouse up (release piece)
-                        svgPiece.on('mouseup', function () {
-                            if (canvas.getActiveObject() === this) {
-                                this.set({ opacity: 1 });
-
-                                const newRow = Math.round(this.top / squareSize);
-                                const newCol = Math.round(this.left / squareSize);
-
-                                // Check if the move is valid
-                                if (isValidMove(this, newRow, newCol)) {
-                                    piecePositions[newRow + '-' + newCol] = piecePositions[this.startRow + '-' + this.startCol];
-                                    delete piecePositions[this.startRow + '-' + this.startCol];
-                                    
-                                    // Update the turn
-                                    turn = turn === 'white' ? 'black' : 'white';
-                                    updateTurnIndicator();
-                                    playMoveSound();
-                                    announceTurn();
-                                } else {
-                                    // If not valid, reset position
-                                    this.left = this.startLeft;
-                                    this.top = this.startTop;
-                                    this.setCoords();
-                                    canvas.renderAll();
-                                }
-                            }
-                        });
-
-                        // Snap to grid while moving
-                        svgPiece.on('moving', function () {
-                            this.set({
-                                left: Math.round(this.left / squareSize) * squareSize + squareSize / 2,
-                                top: Math.round(this.top / squareSize) * squareSize + squareSize / 2
-                            });
-                        });
-
-                        canvas.add(svgPiece);
-                        piecePositions[row + '-' + col] = svgPiece;
+        // Create the chessboard
+        function createChessboard() {
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const isLightSquare = (row + col) % 2 === 0;
+                    const square = new fabric.Rect({
+                        left: col * squareSize,
+                        top: row * squareSize,
+                        fill: isLightSquare ? '#eee' : '#8B4513',
+                        width: squareSize,
+                        height: squareSize,
+                        selectable: false
                     });
+                    canvas.add(square);
                 }
             }
         }
-    }
 
-    // Update the turn indicator
-    function updateTurnIndicator() {
-        document.getElementById('turnIndicator').innerText = `Turn: ${turn.charAt(0).toUpperCase() + turn.slice(1)}`;
-    }
+        // Load SVG pieces onto the chessboard
+        function addPieces() {
+            const pieces = {
+                'r': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg',
+                'n': 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg',
+                'b': 'https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg',
+                'q': 'https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg',
+                'k': 'https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg',
+                'p': 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg',
+                'R': 'https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg',
+                'N': 'https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg',
+                'B': 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg',
+                'Q': 'https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg',
+                'K': 'https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg',
+                'P': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg'
+            };
 
-    // Valid move functions for each piece type
-    function isValidMove(piece, newRow, newCol) {
-        const pieceType = piece.pieceColor === 'white' ? piece.charAt(0).toUpperCase() : piece.charAt(0).toLowerCase();
-        switch (pieceType) {
-            case 'p':
-                return isValidPawnMove(piece, newRow, newCol);
-            case 'r':
-                return isValidRookMove(piece, newRow, newCol);
-            case 'n':
-                return isValidKnightMove(piece, newRow, newCol);
-            case 'b':
-                return isValidBishopMove(piece, newRow, newCol);
-            case 'q':
-                return isValidQueenMove(piece, newRow, newCol);
-            case 'k':
-                return isValidKingMove(piece, newRow, newCol);
-            default:
-                return false;
-        }
-    }
+            const boardState = [
+                ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+                ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+                ['.', '.', '.', '.', '.', '.', '.', '.'],
+                ['.', '.', '.', '.', '.', '.', '.', '.'],
+                ['.', '.', '.', '.', '.', '.', '.', '.'],
+                ['.', '.', '.', '.', '.', '.', '.', '.'],
+                ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+                ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
+            ];
 
-    function isValidPawnMove(piece, newRow, newCol) {
-        const direction = piece.pieceColor === 'white' ? -1 : 1;
-        const startRow = piece.pieceColor === 'white' ? 6 : 1;
-        const validMove = (newRow === piece.startRow + direction) && (newCol === piece.startCol);
-        const validDoubleMove = (newRow === piece.startRow + 2 * direction) && (newCol === piece.startCol) && (piece.startRow === startRow);
-        const validCapture = (newRow === piece.startRow + direction) && (Math.abs(newCol - piece.startCol) === 1);
-        return validMove || validDoubleMove || validCapture;
-    }
-
-    function isValidRookMove(piece, newRow, newCol) {
-        const validMove = (newRow === piece.startRow) || (newCol === piece.startCol);
-        return validMove && clearPath(piece, newRow, newCol);
-    }
-
-    function isValidKnightMove(piece, newRow, newCol) {
-        const validMove = (Math.abs(newRow - piece.startRow) === 2 && Math.abs(newCol - piece.startCol) === 1) ||
-            (Math.abs(newRow - piece.startRow) === 1 && Math.abs(newCol - piece.startCol) === 2);
-        return validMove;
-    }
-
-    function isValidBishopMove(piece, newRow, newCol) {
-        const validMove = Math.abs(newRow - piece.startRow) === Math.abs(newCol - piece.startCol);
-        return validMove && clearPath(piece, newRow, newCol);
-    }
-
-    function isValidQueenMove(piece, newRow, newCol) {
-        const validMove = (newRow === piece.startRow) || (newCol === piece.startCol) || (Math.abs(newRow - piece.startRow) === Math.abs(newCol - piece.startCol));
-        return validMove && clearPath(piece, newRow, newCol);
-    }
-
-    function isValidKingMove(piece, newRow, newCol) {
-        const validMove = Math.abs(newRow - piece.startRow) <= 1 && Math.abs(newCol - piece.startCol) <= 1;
-        return validMove;
-    }
-
-    function clearPath(piece, newRow, newCol) {
-        const dRow = Math.sign(newRow - piece.startRow);
-        const dCol = Math.sign(newCol - piece.startCol);
-        let row = piece.startRow + dRow;
-        let col = piece.startCol + dCol;
-        while (row !== newRow || col !== newCol) {
-            if (piecePositions[row + '-' + col]) {
-                return false;
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = boardState[row][col];
+                    if (piece !== '.') {
+                        fabric.loadSVGFromURL(pieces[piece], function(objects, options) {
+                            const svgPiece = fabric.util.groupSVGElements(objects, options);
+                            svgPiece.set({
+                                left: col * squareSize + squareSize / 2,
+                                top: row * squareSize + squareSize / 2,
+                                originX: 'center',
+                                originY: 'center',
+                                hasControls: false,
+                                selectable: true,
+                                pieceColor: piece === piece.toUpperCase() ? 'white' : 'black'
+                            });
+                            
+                            // Mouse event handlers
+                            svgPiece.on('mousedown', function() {
+                                console.log(`Piece selected: ${piece}`);
+                                if ((turn === 'white' && this.pieceColor === 'white') || 
+                                    (turn === 'black' && this.pieceColor === 'black')) {
+                                    canvas.setActiveObject(this);
+                                }
+                            });
+                            svgPiece.on('mouseup', function() {
+                                const activeObject = canvas.getActiveObject();
+                                if (activeObject === this) {
+                                    const fromPosition = coordsToPosition(this.left, this.top);
+                                    console.log(`Move from: ${fromPosition}`);
+                                    alert(`Select destination square for ${piece} (current position: ${fromPosition})`);
+                                }
+                            });
+                            canvas.add(svgPiece);
+                        });
+                    }
+                }
             }
-            row += dRow;
-            col += dCol;
         }
-        return true;
-    }
 
-    // Text-to-Speech for announcing the current player's turn
-    function announceTurn() {
-        const message = `${turn.charAt(0).toUpperCase() + turn.slice(1)}'s turn`;
-        const utterance = new SpeechSynthesisUtterance(message);
-        speechSynthesis.speak(utterance);
-    }
+        function coordsToPosition(left, top) {
+            const col = Math.floor(left / squareSize);
+            const row = 8 - Math.floor(top / squareSize);
+            return String.fromCharCode(col + 'a'.charCodeAt(0)) + row;
+        }
 
-    // Play move sound
-    function playMoveSound() {
-        const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
-        audio.play();
-    }
+        function updateHistory(move) {
+            history.push(move);
+            const historyDiv = document.getElementById('history');
+            historyDiv.innerHTML = history.join('<br/>');
+        }
 
-    // Start game
-    function startGame() {
+        function movePiece(from, to) {
+            const piece = canvas.getActiveObject();
+            if (!piece) return;
+
+            const fromCoords = positionToCoords(from);
+            const toCoords = positionToCoords(to);
+
+            if (piece && piece.left === fromCoords.x && piece.top === fromCoords.y) {
+                piece.set({
+                    left: toCoords.x,
+                    top: toCoords.y,
+                });
+                piece.setCoords();
+                canvas.renderAll();
+                updateHistory(`${piece.pieceColor} moves from ${from} to ${to}`);
+                turn = turn === 'white' ? 'black' : 'white'; // Switch turns
+                startTimer(); // Restart timer for the next player
+            }
+        }
+
+        function positionToCoords(position) {
+            const col = position.charCodeAt(0) - 'a'.charCodeAt(0);
+            const row = 8 - parseInt(position[1]);
+            return {
+                x: col * squareSize + squareSize / 2,
+                y: row * squareSize + squareSize / 2
+            };
+        }
+
+        window.addEventListener('keydown', function(event) {
+            if (event.key.match(/[a-h][1-8]/)) { // Check for valid square
+                const from = prompt("Enter the piece's current position (e.g., e2):");
+                if (from) {
+                    movePiece(from, event.key); // Move to the square indicated by the key
+                }
+            }
+        });
+
         createChessboard();
         addPieces();
-        turn = 'white';
-        updateTurnIndicator();
-        announceTurn();
-    }
-
-    // Restart game
-    function restartGame() {
-        startGame();
-    }
-
-    // Add event listeners for Start and Restart buttons
-    document.getElementById('startBtn').addEventListener('click', startGame);
-    document.getElementById('restartBtn').addEventListener('click', restartGame);
-
-    // Initialize game
-    startGame();
-</script>
+        startTimer();
+    </script>
 </body>
 </html>
-
