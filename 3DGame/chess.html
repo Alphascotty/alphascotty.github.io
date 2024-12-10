@@ -127,6 +127,7 @@
         document.getElementById("startButton").addEventListener("click", () => {
             placePieces();
             isWhiteTurn = true; // White's turn first
+            console.log("Game Started! White's turn.");
         });
 
         document.getElementById("restartButton").addEventListener("click", () => {
@@ -134,6 +135,7 @@
             pieces.length = 0;
             placePieces();
             isWhiteTurn = true; // White's turn first
+            console.log("Game Restarted! White's turn.");
         });
 
         let selectedPiece = null;
@@ -145,18 +147,23 @@
                 if (pickedTile && pickedTile.name.startsWith("tile")) {
                     const targetX = pickedTile.position.x;
                     const targetZ = pickedTile.position.z;
+                    console.log("Attempting to move piece", selectedPiece.name, "to", targetX, targetZ);
 
                     if (isValidMove(selectedPiece, targetX, targetZ)) {
                         selectedPiece.position.x = targetX;
                         selectedPiece.position.z = targetZ;
+                        console.log("Moved piece to new position", targetX, targetZ);
                         selectedPiece = null;
                         isWhiteTurn = !isWhiteTurn;
+                    } else {
+                        console.log("Invalid move");
                     }
                 }
             } else if (pickResult.pickedMesh && pickResult.pickedMesh.color) {
                 const piece = pickResult.pickedMesh;
                 if ((isWhiteTurn && piece.color.equals(new BABYLON.Color3(1, 1, 1))) || (!isWhiteTurn && piece.color.equals(new BABYLON.Color3(0, 0, 0)))) {
                     selectedPiece = piece;
+                    console.log("Selected piece", piece.name);
                 }
             }
         };
@@ -230,8 +237,9 @@
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = `${piece.name}.stl`;
+                link.download = 'chess_piece.stl';
                 link.click();
+                URL.revokeObjectURL(url);
             });
         });
 
@@ -245,5 +253,4 @@
     </script>
 </body>
 </html>
-
 
