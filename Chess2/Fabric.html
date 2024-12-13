@@ -42,9 +42,7 @@
         let turn = 'white'; // White starts
         let gameOver = false;
         let piecesOnBoard = []; // Store all pieces as fabric objects
-        let selectedSquare = null;
-        let isWhiteTurn = true;
-        let promotionSquare = null;
+        let selectedPiece = null;
 
         // Game pieces setup (simplified)
         const pieces = {
@@ -112,15 +110,22 @@
 
                             svgPiece.on('mousedown', function() {
                                 if ((turn === 'white' && this.pieceColor === 'white') || (turn === 'black' && this.pieceColor === 'black')) {
+                                    selectedPiece = this;
                                     canvas.setActiveObject(this);
                                 }
                             });
 
                             svgPiece.on('mouseup', function() {
-                                const activeObject = canvas.getActiveObject();
-                                if (activeObject === this) {
+                                if (selectedPiece === this) {
                                     const fromPosition = coordsToPosition(this.left, this.top);
-                                    alert(`Select destination square for ${piece} (current position: ${fromPosition})`);
+                                    const toPosition = coordsToPosition(selectedPiece.left, selectedPiece.top);
+
+                                    // Implement move logic here: e.g., validate and move the piece, update turn, etc.
+                                    console.log(`Move piece from ${fromPosition} to ${toPosition}`);
+
+                                    // Switch turn after move
+                                    turn = (turn === 'white') ? 'black' : 'white';
+                                    updateTimer();
                                 }
                             });
 
@@ -147,69 +152,41 @@
             };
         }
 
-        // Basic validation of moves
-        function isValidMove(piece, startRow, startCol, endRow, endCol) {
-            const dx = endRow - startRow;
-            const dy = endCol - startCol;
-            const absDx = Math.abs(dx);
-            const absDy = Math.abs(dy);
-
-            if (game[endRow][endCol] && 
-                ((piece === piece.toUpperCase() && game[endRow][endCol] === game[endRow][endCol].toUpperCase()) ||
-                 (piece === piece.toLowerCase() && game[endRow][endCol] === game[endRow][endCol].toLowerCase()))) {
-                return false; // Can't capture own piece
-            }
-
-            switch (piece.toLowerCase()) {
-                case 'p': 
-                    if (piece === 'P') {
-                        if (dy === 0 && dx === -1 && !game[endRow][endCol]) return true;
-                        if (startRow === 6 && dy === 0 && dx === -2 && !game[endRow][endCol] && !game[endRow + 1][endCol]) return true;
-                        if (absDy === 1 && dx === -1 && game[endRow][endCol]) return true;
-                    } else if (piece === 'p') {
-                        if (dy === 0 && dx === 1 && !game[endRow][endCol]) return true;
-                        if (startRow === 1 && dy === 0 && dx === 2 && !game[endRow][endCol] && !game[endRow - 1][endCol]) return true;
-                        if (absDy === 1 && dx === 1 && game[endRow][endCol]) return true;
+        // Timer update
+        function updateTimer() {
+            // Timer logic for switching turn and updating timer
+            if (turn === 'white') {
+                // Start white timer, stop black timer
+                clearInterval(timerInterval);
+                timerInterval = setInterval(function() {
+                    whiteTime--;
+                    document.getElementById('white-timer').textContent = `White: ${formatTime(whiteTime)}`;
+                    if (whiteTime <= 0) {
+                        gameOver = true;
+                        clearInterval(timerInterval);
+                        alert("White's time is up!");
                     }
-                    break;
-                case 'r':
-                    if ((dx === 0 || dy === 0) && clearPath(startRow, startCol, endRow, endCol)) return true;
-                    break;
-                case 'n':
-                    if ((absDx === 2 && absDy === 1) || (absDx === 1 && absDy === 2)) return true;
-                    break;
-                case 'b':
-                    if (absDx === absDy && clearPath(startRow, startCol, endRow, endCol)) return true;
-                    break;
-                case 'q':
-                    if ((dx === 0 || dy === 0 || absDx === absDy) && clearPath(startRow, startCol, endRow, endCol)) return true;
-                    break;
-                case 'k':
-                    if (absDx <= 1 && absDy <= 1) return true;
-                    break;
-                default:
-                    return false;
+                }, 1000);
+            } else {
+                // Start black timer, stop white timer
+                clearInterval(timerInterval);
+                timerInterval = setInterval(function() {
+                    blackTime--;
+                    document.getElementById('black-timer').textContent = `Black: ${formatTime(blackTime)}`;
+                    if (blackTime <= 0) {
+                        gameOver = true;
+                        clearInterval(timerInterval);
+                        alert("Black's time is up!");
+                    }
+                }, 1000);
             }
-            return false;
         }
 
-        function clearPath(startRow, startCol, endRow, endCol) {
-            const stepRow = endRow > startRow ? 1 : endRow < startRow ? -1 : 0;
-            const stepCol = endCol > startCol ? 1 : endCol < startCol ? -1 : 0;
-            let currentRow = startRow + stepRow;
-            let currentCol = startCol + stepCol;
-
-            while (currentRow !== endRow || currentCol !== endCol) {
-                if (game[currentRow][currentCol]) return false;
-                currentRow += stepRow;
-                currentCol += stepCol;
-            }
-            return true;
-        }
-
-        function speak(text) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            speechSynthesis.speak(utterance);
+        // Format time in mm:ss
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secondsRemaining = seconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(secondsRemaining).padStart(2, '0')}`;
         }
 
         createChessboard();
@@ -217,4 +194,3 @@
     </script>
 </body>
 </html>
-
