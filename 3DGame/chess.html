@@ -17,31 +17,24 @@
         const createScene = () => {
             const scene = new BABYLON.Scene(engine);
 
-         
             const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 15, BABYLON.Vector3.Zero(), scene);
             camera.attachControl(canvas, true);
 
-        
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
 
-  
-const boardSize = 8;
-const tileSize = 1;
+            const boardSize = 8;
+            const tileSize = 1;
 
-for (let row = 0; row < boardSize; row++) {
-    for (let col = 0; col < boardSize; col++) {
-        const tile = BABYLON.MeshBuilder.CreateBox(`tile${row}_${col}`, {size: tileSize}, scene);
-        tile.position = new BABYLON.Vector3(row - boardSize / 2 + 0.5, 0, col - boardSize / 2 + 0.5);
-        
-        const tileMaterial = new BABYLON.StandardMaterial(`tileMat${row}_${col}`, scene);
-        
-        // Update colors here
-        tileMaterial.diffuseColor = (row + col) % 2 === 0 ? new BABYLON.Color3(0.8, 0.5, 0.3) : new BABYLON.Color3(0.2, 0.4, 0.6);
-        
-        tile.material = tileMaterial;
-    }
-}
+            for (let row = 0; row < boardSize; row++) {
+                for (let col = 0; col < boardSize; col++) {
+                    const tile = BABYLON.MeshBuilder.CreateBox(`tile${row}_${col}`, {size: tileSize}, scene);
+                    tile.position = new BABYLON.Vector3(row - boardSize / 2 + 0.5, 0, col - boardSize / 2 + 0.5);
 
+                    const tileMaterial = new BABYLON.StandardMaterial(`tileMat${row}_${col}`, scene);
+                    tileMaterial.diffuseColor = (row + col) % 2 === 0 ? new BABYLON.Color3(1, 1, 1) : new BABYLON.Color3(0, 0, 0);
+                    tile.material = tileMaterial;
+                }
+            }
 
             return scene;
         };
@@ -91,35 +84,30 @@ for (let row = 0; row < boardSize; row++) {
         };
 
         const pieces = [];
-       
+
         for (let i = 0; i < 8; i++) {
             pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, 2.5), new BABYLON.Color3(1, 1, 1)));
             pieces.push(createPiece("pawn", new BABYLON.Vector3(i - 3.5, 0.5, -2.5), new BABYLON.Color3(0.3, 0.3, 0.3)));
         }
 
-     
         pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
         pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
         pieces.push(createPiece("rook", new BABYLON.Vector3(-3.5, 0.5, -3.5), new BABYLON.Color3(0.3, 0.3, 0.3)));
         pieces.push(createPiece("rook", new BABYLON.Vector3(3.5, 0.5, -3.5), new BABYLON.Color3(0.3, 0.3, 0.3)));
 
-     
         pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
         pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
         pieces.push(createPiece("knight", new BABYLON.Vector3(-2.5, 0.5, -3.5), new BABYLON.Color3(0.3, 0.3, 0.3)));
         pieces.push(createPiece("knight", new BABYLON.Vector3(2.5, 0.5, -3.5), new BABYLON.Color3(0.3, 0.3, 0.3)));
 
-       
         pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
         pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
         pieces.push(createPiece("bishop", new BABYLON.Vector3(-1.5, 0.5, -3.5), new BABYLON.Color3(0.3, 0.3, 0.3)));
         pieces.push(createPiece("bishop", new BABYLON.Vector3(1.5, 0.5, -3.5), new BABYLON.Color3(0.3, 0.3, 0.3)));
 
-        // Place queens
         pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
         pieces.push(createPiece("queen", new BABYLON.Vector3(-0.5, 0.5, -3.5), new BABYLON.Color3(0.3, 0.3, 0.3)));
 
-       
         pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, 3.5), new BABYLON.Color3(1, 1, 1)));
         pieces.push(createPiece("king", new BABYLON.Vector3(0.5, 0.5, -3.5), new BABYLON.Color3(0.3, 0.3, 0.3)));
 
@@ -160,7 +148,7 @@ for (let row = 0; row < boardSize; row++) {
                         }
                         selectedPiece = null;
                     } else {
-                        selectedPiece=null;
+                        selectedPiece = null;
                     }
                 }
             }
@@ -171,7 +159,8 @@ for (let row = 0; row < boardSize; row++) {
                 return false;
             }
             else if (piece.name == "knight") {
-                if (((piece.position.x == destination.position.x + 1 || piece.position.x == destination.position.x - 1) && (piece.position.z == destination.position.z + 2 || piece.position.z == destination.position.z - 2)) || ((piece.position.x == destination.position.x + 2 || piece.position.x == destination.position.x - 2) && (piece.position.z == destination.position.z + 1 || piece.position.z == destination.position.z - 1))) {
+                if (((piece.position.x == destination.position.x + 1 || piece.position.x == destination.position.x - 1) && (piece.position.z == destination.position.z + 2 || piece.position.z == destination.position.z - 2))
+                    || ((piece.position.x == destination.position.x + 2 || piece.position.x == destination.position.x - 2) && (piece.position.z == destination.position.z + 1 || piece.position.z == destination.position.z - 1))) {
                     return true;
                 }
             } else if (piece.name == "bishop") {
@@ -179,19 +168,23 @@ for (let row = 0; row < boardSize; row++) {
                     return !willCollide(piece, destination);
                 }
             } else if (piece.name == "pawn" && playerTurn.equals(new BABYLON.Color3(1, 1, 1))) {
-                if ((destination.position.x == piece.position.x && !getPieceAtPosition(destination.position.x, destination.position.z) && (destination.position.z == piece.position.z - 1 || (destination.position.z == piece.position.z - 2 && piece.position.z == 2.5 && !willCollide(piece, destination))) || (destination.position.z == piece.position.z - 1 && (destination.position.x == piece.position.x - 1 || destination.position.x == piece.position.x + 1) && getPieceAtPosition(destination.position.x, destination.position.z)))) {
+                if ((destination.position.x == piece.position.x && !getPieceAtPosition(destination.position.x, destination.position.z) && (destination.position.z == piece.position.z - 1 || (destination.position.z == piece.position.z - 2 && piece.position.z == 2.5)))
+                    || (Math.abs(destination.position.x - piece.position.x) == 1 && destination.position.z == piece.position.z - 1 && getPieceAtPosition(destination.position.x, destination.position.z))) {
                     return true;
                 }
             } else if (piece.name == "pawn" && !playerTurn.equals(new BABYLON.Color3(1, 1, 1))) {
-                if ((destination.position.x == piece.position.x && !getPieceAtPosition(destination.position.x, destination.position.z) && (destination.position.z == piece.position.z + 1 || (destination.position.z == piece.position.z + 2 && piece.position.z == -2.5 && !willCollide(piece, destination))) || (destination.position.z == piece.position.z + 1 && (destination.position.x == piece.position.x - 1 || destination.position.x == piece.position.x + 1) && getPieceAtPosition(destination.position.x, destination.position.z)))) {
+                if ((destination.position.x == piece.position.x && !getPieceAtPosition(destination.position.x, destination.position.z) && (destination.position.z == piece.position.z + 1 || (destination.position.z == piece.position.z + 2 && piece.position.z == -2.5)))
+                    || (Math.abs(destination.position.x - piece.position.x) == 1 && destination.position.z == piece.position.z + 1 && getPieceAtPosition(destination.position.x, destination.position.z))) {
                     return true;
                 }
             } else if (piece.name == "king") {
-                if (((destination.position.z == piece.position.z + 1 || destination.position.z == piece.position.z - 1) && (destination.position.x == piece.position.x || destination.position.x == piece.position.x + 1 || destination.position.x == piece.position.x - 1)) || (destination.position.z == piece.position.z && (destination.position.x == piece.position.x + 1 || destination.position.x == piece.position.x - 1))) {
+                if (((destination.position.z == piece.position.z + 1 || destination.position.z == piece.position.z - 1) && (destination.position.x == piece.position.x || destination.position.x == piece.position.x + 1 || destination.position.x == piece.position.x - 1))
+                    || ((destination.position.z == piece.position.z) && (destination.position.x == piece.position.x + 1 || destination.position.x == piece.position.x - 1))) {
                     return true;
                 }
             } else if (piece.name == "queen") {
-                if ((destination.position.z == piece.position.z && destination.position.x != piece.position.x) || (destination.position.x == piece.position.x && destination.position.z != piece.position.z) || ((destination.position.z - piece.position.z) == (destination.position.x - piece.position.x)) || ((destination.position.z - piece.position.z) == -(destination.position.x - piece.position.x))) {
+                if ((destination.position.z == piece.position.z && destination.position.x != piece.position.x) || (destination.position.x == piece.position.x && destination.position.z != piece.position.z)
+                    || Math.abs(destination.position.z - piece.position.z) == Math.abs(destination.position.x - piece.position.x)) {
                     return !willCollide(piece, destination);
                 }
             } else if (piece.name == "rook") {
@@ -206,21 +199,21 @@ for (let row = 0; row < boardSize; row++) {
             let startPos = piece.position;
             let dirX = Math.sign(destination.position.x - piece.position.x);
             let dirZ = Math.sign(destination.position.z - piece.position.z);
-            let distX = Math.abs(destination.position.x - piece.position.x - dirX); // These two values are one space closer to the piece from the destination
+            let distX = Math.abs(destination.position.x - piece.position.x - dirX);
             let distZ = Math.abs(destination.position.z - piece.position.z - dirZ);
-            if (piece.position.z == destination.position.z) { // horizontal
+            if (piece.position.z == destination.position.z) {
                 for (let i = 1; i <= distX; i++) {
                     if (getPieceAtPosition(startPos.x + i * dirX, startPos.z)) {
                         return true;
                     }
                 }
-            } else if (piece.position.x == destination.position.x) { // vertical something wrong here!!!!!
+            } else if (piece.position.x == destination.position.x) {
                 for (let i = 1; i <= distZ; i++) {
                     if (getPieceAtPosition(startPos.x, startPos.z + i * dirZ)) {
                         return true;
                     }
                 }
-            } else if (((destination.position.z - piece.position.z) / (destination.position.x - piece.position.x)) != 0) { // diagonal
+            } else if (((destination.position.z - piece.position.z) / (destination.position.x - piece.position.x)) != 0) {
                 for (let i = 1; i <= distX; i++) {
                     if (getPieceAtPosition(startPos.x + i * dirX, startPos.z + i * dirZ)) {
                         return true;
@@ -230,7 +223,7 @@ for (let row = 0; row < boardSize; row++) {
             return false;
         }
 
-        function getPieceAtPosition(searchX,searchZ) {
+        function getPieceAtPosition(searchX, searchZ) {
             for (let piece of pieces) {
                 if (piece.position.x == searchX && piece.position.z == searchZ) {
                     return piece;
@@ -252,12 +245,17 @@ for (let row = 0; row < boardSize; row++) {
             }
         }
 
-                   // Function to export the chessboard and pieces as STL
+                document.getElementById("startButton").addEventListener("click", () => {
+            // Add functionality to start the game
+        });
+
+        document.getElementById("restartButton").addEventListener("click", () => {
+            // Add functionality to restart the game
+        });
+
         document.getElementById("exportButton").addEventListener("click", () => {
             const stlExporter = new BABYLON.STLExport();
             const meshToExport = [];
-            
-            // Add chessboard tiles and pieces to the export array
             pieces.forEach(piece => {
                 meshToExport.push(piece);
             });
@@ -268,16 +266,13 @@ for (let row = 0; row < boardSize; row++) {
             });
         });
 
-        // Render loop
         engine.runRenderLoop(() => {
             scene.render();
         });
 
-        // Resize
         window.addEventListener("resize", () => {
             engine.resize();
         });
     </script>
 </body>
 </html>
-
